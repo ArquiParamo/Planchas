@@ -399,6 +399,36 @@ iframe {
   overflow: hidden;
 }
 
+.canva-link-frame {
+  align-items: center;
+  justify-items: center;
+  padding: clamp(22px, 4vw, 50px);
+  background:
+    linear-gradient(90deg, rgba(32, 48, 41, 0.05) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(32, 48, 41, 0.05) 1px, transparent 1px),
+    #f4f1e7;
+  background-size: 32px 32px;
+}
+
+.canva-link-frame.is-active {
+  display: grid;
+}
+
+.canva-link-frame > div {
+  max-width: 560px;
+  padding: clamp(22px, 4vw, 42px);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.canva-link-frame h2 {
+  font-size: clamp(26px, 4vw, 44px);
+  line-height: 1;
+  margin-bottom: 16px;
+}
+
 .pdf-presentation-frame.is-active {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);

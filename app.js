@@ -5,7 +5,7 @@ const PDFJS_WORKER_URL = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/
 const state = {
   view: "planchas",
   boardId: config.boards[0].id,
-  presentationMode: "canva",
+  presentationMode: "pdf",
   slide: 1,
   zoom: "fit",
   zoomScale: 1
@@ -165,9 +165,10 @@ async function renderActivePage() {
 
 function renderPresentation() {
   const presentation = config.presentation;
-  $("#canvaFrame").src = presentation.canvaEmbedUrl;
   $("#canvaExternal").href = presentation.canvaShareUrl;
   $("#canvaExternal").textContent = presentation.canvaTitle;
+  $("#canvaFrameLink").href = presentation.canvaShareUrl;
+  $("#canvaFrameLink").textContent = presentation.canvaTitle;
   loadPresentationPdf();
   updatePresentationMode();
 }

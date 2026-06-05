@@ -77,19 +77,24 @@
               respaldo de lectura.
             </p>
             <div class="segmented" aria-label="Modo de presentacion">
-              <button class="segment is-active" type="button" data-presentation-mode="canva">Canva</button>
-              <button class="segment" type="button" data-presentation-mode="pdf">PDF V3</button>
+              <button class="segment" type="button" data-presentation-mode="canva">Canva</button>
+              <button class="segment is-active" type="button" data-presentation-mode="pdf">PDF V3</button>
             </div>
             <a class="primary-link" id="canvaExternal" target="_blank" rel="noreferrer">Abrir Canva</a>
           </div>
           <div class="presentation-stage">
-            <iframe
-              class="presentation-frame is-active"
-              id="canvaFrame"
-              title="Presentacion en Canva"
-              allowfullscreen
-            ></iframe>
-            <div class="presentation-frame pdf-presentation-frame" id="presentationPdf">
+            <div class="presentation-frame canva-link-frame" id="canvaFrame">
+              <div>
+                <p class="eyebrow">Canva</p>
+                <h2>Presentacion principal en Canva</h2>
+                <p class="intro">
+                  La version completa ya esta creada en Canva. El visor PDF permanece embebido aqui
+                  como respaldo mientras Canva habilita la vista incrustada.
+                </p>
+                <a class="primary-link" id="canvaFrameLink" target="_blank" rel="noreferrer">Abrir Canva</a>
+              </div>
+            </div>
+            <div class="presentation-frame pdf-presentation-frame is-active" id="presentationPdf">
               <div class="slide-toolbar">
                 <button class="tool-button compact-tool" id="prevSlide" type="button">-</button>
                 <span id="slideStatus">Diapositiva</span>
