@@ -33,12 +33,32 @@ Luego abre `http://localhost:4173`.
 
 ## Despliegue
 
-Este sitio no requiere build. En Cloudflare Pages:
+Este sitio no requiere build. En Cloudflare Pages, conecta el repositorio
+`ArquiParamo/Planchas` o usa Wrangler con la configuracion `wrangler.jsonc`.
+
+Configuracion en dashboard:
 
 - Framework preset: `None`
 - Build command: vacio
 - Output directory: `/`
 - Production branch: `main`
+
+Configuracion con Wrangler:
+
+```powershell
+wrangler pages project create planchas --production-branch main
+wrangler pages deploy . --project-name planchas --branch main
+```
+
+Tambien deje una plantilla de workflow manual en
+`docs/deploy-cloudflare-pages.workflow.example.yml`. Para usarla, copiala a
+`.github/workflows/deploy-cloudflare-pages.yml` desde una cuenta con permiso
+`workflow`, y agrega en GitHub Actions los secretos:
+
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_ACCOUNT_ID`
+
+Luego ejecuta manualmente el workflow `Deploy Cloudflare Pages`.
 
 La Function `/pdf/:id` espera que los assets existan en:
 
