@@ -69,9 +69,9 @@ window.PLANCHAS_CONFIG = {
     },
     {
       title: "Esquema de gestion",
-      label: "Abrir repositorio",
-      url: "https://github.com/ArquiParamo/Esq-gestion",
-      note: "Repositorio verificado. El dominio Pages se puede cambiar cuando este activo."
+      label: "Abrir esquema",
+      url: "https://esq-gestion.arqiparamo.workers.dev/",
+      note: "Sitio publico verificado por HTTP 200."
     }
   ]
 };
