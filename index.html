@@ -73,23 +73,23 @@
             <p class="eyebrow">Presentacion</p>
             <h1 id="presentationHeading">Canva y respaldo local</h1>
             <p class="intro">
-              El enlace de Canva compartido queda como presentacion principal en curso. El PDF local
-              de la V3 queda disponible como respaldo de lectura.
+              La presentacion principal esta en Canva. El PDF local de la V3 queda disponible como
+              respaldo de lectura.
             </p>
             <div class="segmented" aria-label="Modo de presentacion">
-              <button class="segment" type="button" data-presentation-mode="canva">Canva</button>
-              <button class="segment is-active" type="button" data-presentation-mode="pdf">PDF V3</button>
+              <button class="segment is-active" type="button" data-presentation-mode="canva">Canva</button>
+              <button class="segment" type="button" data-presentation-mode="pdf">PDF V3</button>
             </div>
             <a class="primary-link" id="canvaExternal" target="_blank" rel="noreferrer">Abrir Canva</a>
           </div>
           <div class="presentation-stage">
             <iframe
-              class="presentation-frame"
+              class="presentation-frame is-active"
               id="canvaFrame"
               title="Presentacion en Canva"
               allowfullscreen
             ></iframe>
-            <div class="presentation-frame pdf-presentation-frame is-active" id="presentationPdf">
+            <div class="presentation-frame pdf-presentation-frame" id="presentationPdf">
               <div class="slide-toolbar">
                 <button class="tool-button compact-tool" id="prevSlide" type="button">-</button>
                 <span id="slideStatus">Diapositiva</span>

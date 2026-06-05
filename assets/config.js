@@ -39,13 +39,12 @@ window.PLANCHAS_CONFIG = {
     }
   ],
   presentation: {
-    canvaStatus: "in_progress",
-    canvaDesignId: "DAHLrjS3wfc",
-    canvaTitle: "Presentacion en Canva en curso",
-    canvaShareUrl: "https://canva.link/r5cbqk33prfx7po",
-    canvaResolvedUrl:
-      "https://www.canva.com/design/DAHLrjS3wfc/p21bDaqrnU1aAsj0MV_kPg/edit?utm_content=DAHLrjS3wfc&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton",
-    canvaEmbedUrl: "https://www.canva.com/design/DAHLrjS3wfc/view?embed",
+    canvaStatus: "complete",
+    canvaDesignId: "DAHLtiAbu5c",
+    canvaTitle: "Presentacion principal en Canva",
+    canvaShareUrl: "https://www.canva.com/d/aTlPV4kIEUYqZow",
+    canvaResolvedUrl: "https://www.canva.com/d/QpohSQxgQWfCyAl",
+    canvaEmbedUrl: "https://www.canva.com/design/DAHLtiAbu5c/view?embed",
     localPdfUrl: "./assets/presentation/Arquitectura_de_Paramo_presentacion_v3_Codex.pdf"
   },
   renders: [

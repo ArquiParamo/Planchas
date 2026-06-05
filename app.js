@@ -5,7 +5,7 @@ const PDFJS_WORKER_URL = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/
 const state = {
   view: "planchas",
   boardId: config.boards[0].id,
-  presentationMode: "pdf",
+  presentationMode: "canva",
   slide: 1,
   zoom: "fit",
   zoomScale: 1
