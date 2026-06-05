@@ -22,6 +22,9 @@ let presentationPdf;
 let presentationRenderTask;
 let presentationPageCount = 0;
 let presentationToken = 0;
+let boardsLoadStarted = false;
+const boardPdfEntries = new Map();
+const boardRenderTasks = new Map();
 
 function formatBytes(bytes) {
   const units = ["B", "KB", "MB", "GB"];
@@ -67,32 +70,145 @@ function renderBoardList() {
     .join("");
 }
 
+function renderBoardPanels() {
+  const strip = $("#boardsStrip");
+  if (!strip) return;
+  strip.innerHTML = config.boards
+    .map(
+      (board) => `
+        <article class="board-panel" data-board-panel="${board.id}">
+          <header class="board-panel-header">
+            <h3>${board.title}</h3>
+            <span>${formatBytes(board.sizeBytes)}</span>
+          </header>
+          <div class="board-canvas-shell" data-board-shell="${board.id}">
+            <p class="pdf-loader" data-board-loader="${board.id}">Cargando ${board.fileName}</p>
+            <canvas data-board-canvas="${board.id}" aria-label="${board.title} renderizada desde PDF original"></canvas>
+          </div>
+        </article>
+      `
+    )
+    .join("");
+}
+
 function renderBoard() {
   const board = config.boards.find((item) => item.id === state.boardId) || config.boards[0];
   $$(".board-card").forEach((button) => {
     button.classList.toggle("is-active", button.dataset.board === board.id);
   });
+  $$(".board-panel").forEach((panel) => {
+    panel.classList.toggle("is-active", panel.dataset.boardPanel === board.id);
+  });
 
-  $("#currentBoardTitle").textContent = board.title;
+  $("#currentBoardTitle").textContent = "4 planchas originales";
   $("#openBoard").href = getBoardUrl(board).split("#")[0];
   $("#downloadBoard").href = getBoardUrl(board, true);
   $("#downloadBoard").setAttribute("download", board.fileName);
-  $("#sourcePill").textContent = `${board.fileName} original`;
+  $("#sourcePill").textContent = "4 PDFs originales";
   $("#boardMeta").innerHTML = `
     <div>
-      <dt>Tamano</dt>
-      <dd>${formatBytes(board.sizeBytes)} (${board.sizeBytes.toLocaleString("es-CO")} bytes)</dd>
+      <dt>Vista</dt>
+      <dd>Las 4 planchas se cargan juntas desde la release de GitHub.</dd>
     </div>
     <div>
-      <dt>SHA-256</dt>
+      <dt>Documento seleccionado</dt>
+      <dd>${board.title} - ${formatBytes(board.sizeBytes)}</dd>
+    </div>
+    <div>
+      <dt>SHA-256 seleccionado</dt>
       <dd>${board.sha256}</dd>
     </div>
-    <div>
-      <dt>Origen local verificado</dt>
-      <dd>${board.sourcePath}</dd>
-    </div>
   `;
-  loadPdfBoard(board);
+  loadAllBoards();
+}
+
+async function loadAllBoards() {
+  if (boardsLoadStarted) {
+    await renderAllBoardPages();
+    return;
+  }
+  boardsLoadStarted = true;
+  await Promise.all(config.boards.map((board) => loadBoardPage(board)));
+}
+
+async function loadBoardPage(board) {
+  const loader = document.querySelector(`[data-board-loader="${board.id}"]`);
+  try {
+    const pdfjs = await getPdfJs();
+    const loadingTask = pdfjs.getDocument({
+      url: getBoardUrl(board),
+      rangeChunkSize: 1024 * 1024,
+      disableStream: false,
+      disableAutoFetch: true
+    });
+    const pdf = await loadingTask.promise;
+    const page = await pdf.getPage(1);
+    boardPdfEntries.set(board.id, { pdf, page });
+    await renderBoardPage(board.id);
+    loader?.classList.add("is-hidden");
+  } catch (error) {
+    if (loader) loader.textContent = "No se pudo dibujar este PDF. Usa Abrir para verlo.";
+    console.error(error);
+  }
+}
+
+async function renderAllBoardPages() {
+  await Promise.all([...boardPdfEntries.keys()].map((boardId) => renderBoardPage(boardId)));
+}
+
+async function renderBoardPage(boardId) {
+  const entry = boardPdfEntries.get(boardId);
+  if (!entry?.page) return;
+  const previousTask = boardRenderTasks.get(boardId);
+  if (previousTask) {
+    previousTask.cancel();
+    boardRenderTasks.delete(boardId);
+  }
+
+  const shell = document.querySelector(`[data-board-shell="${boardId}"]`);
+  const canvas = document.querySelector(`[data-board-canvas="${boardId}"]`);
+  if (!shell || !canvas) return;
+
+  const context = canvas.getContext("2d");
+  const baseViewport = entry.page.getViewport({ scale: 1 });
+  const shellWidth = Math.max(shell.clientWidth - 24, 240);
+  const shellHeight = Math.max(shell.clientHeight - 24, 320);
+  const fitScale = Math.min(shellWidth / baseViewport.width, shellHeight / baseViewport.height);
+  const scale = fitScale * state.zoomScale;
+  const viewport = entry.page.getViewport({ scale });
+  const outputScale = Math.min(window.devicePixelRatio || 1, 2);
+
+  canvas.width = Math.floor(viewport.width * outputScale);
+  canvas.height = Math.floor(viewport.height * outputScale);
+  canvas.style.width = `${Math.floor(viewport.width)}px`;
+  canvas.style.height = `${Math.floor(viewport.height)}px`;
+  context.setTransform(outputScale, 0, 0, outputScale, 0, 0);
+  context.clearRect(0, 0, viewport.width, viewport.height);
+
+  const task = entry.page.render({ canvasContext: context, viewport });
+  boardRenderTasks.set(boardId, task);
+  await task.promise;
+  if (boardRenderTasks.get(boardId) === task) {
+    boardRenderTasks.delete(boardId);
+  }
+}
+
+function recenterBoards() {
+  state.zoom = "fit";
+  state.zoomScale = 1;
+  const viewport = $("#boardsViewport");
+  if (viewport) {
+    viewport.scrollTo({ left: 0, top: 0, behavior: "smooth" });
+  }
+  renderAllBoardPages();
+}
+
+function scrollBoardIntoView(boardId) {
+  document.querySelector(`[data-board-panel="${boardId}"]`)?.scrollIntoView({
+    behavior: "smooth",
+    block: "nearest",
+    inline: "center"
+  });
 }
 
 async function loadPdfBoard(board) {
@@ -169,7 +285,15 @@ function renderPresentation() {
   $("#canvaExternal").textContent = presentation.canvaTitle;
   $("#canvaFrameLink").href = presentation.canvaShareUrl;
   $("#canvaFrameLink").textContent = presentation.canvaTitle;
-  loadPresentationPdf();
+  if ($("#inlineCanvaExternal")) {
+    $("#inlineCanvaExternal").href = presentation.canvaShareUrl;
+    $("#inlineCanvaExternal").textContent = presentation.canvaTitle;
+  }
+  if ($("#inlineCanvaEmbed")) {
+    $("#inlineCanvaEmbed").src = presentation.canvaEmbedAvailable
+      ? presentation.canvaEmbedUrl
+      : presentation.localPdfUrl;
+  }
   updatePresentationMode();
 }
 
@@ -269,8 +393,7 @@ function setView(viewName) {
   if (viewName === "renders") $("#sourcePill").textContent = `${config.renders.length} renders`;
   if (viewName === "accesos") $("#sourcePill").textContent = "Accesos";
   if (viewName === "planchas") {
-    const board = config.boards.find((item) => item.id === state.boardId) || config.boards[0];
-    $("#sourcePill").textContent = `${board.fileName} original`;
+    $("#sourcePill").textContent = "4 PDFs originales";
   }
   if (viewName === "presentacion" && state.presentationMode === "pdf") {
     requestAnimationFrame(() => renderPresentationSlide());
@@ -294,6 +417,7 @@ function bindEvents() {
     if (!button) return;
     state.boardId = button.dataset.board;
     renderBoard();
+    scrollBoardIntoView(state.boardId);
   });
 
   $$(".nav-button").forEach((button) => {
@@ -308,7 +432,7 @@ function bindEvents() {
   });
 
   $("#fullscreenBoard").addEventListener("click", async () => {
-    const frameWrap = $(".pdf-frame-wrap");
+    const frameWrap = $("#boardsViewport");
     if (document.fullscreenElement) {
       await document.exitFullscreen();
     } else {
@@ -317,22 +441,19 @@ function bindEvents() {
   });
 
   $("#fitBoard").addEventListener("click", async () => {
-    state.zoom = "fit";
-    await renderActivePage();
+    recenterBoards();
   });
 
   $("#zoomIn").addEventListener("click", async () => {
-    const current = state.zoom === "fit" ? 1 : state.zoomScale;
     state.zoom = "manual";
-    state.zoomScale = Math.min(current + 0.2, 4);
-    await renderActivePage();
+    state.zoomScale = Math.min(state.zoomScale + 0.2, 3);
+    await renderAllBoardPages();
   });
 
   $("#zoomOut").addEventListener("click", async () => {
-    const current = state.zoom === "fit" ? 1 : state.zoomScale;
     state.zoom = "manual";
-    state.zoomScale = Math.max(current - 0.2, 0.25);
-    await renderActivePage();
+    state.zoomScale = Math.max(state.zoomScale - 0.2, 0.45);
+    await renderAllBoardPages();
   });
 
   $("#prevSlide").addEventListener("click", async () => {
@@ -348,8 +469,12 @@ function bindEvents() {
   });
 
   window.addEventListener("resize", () => {
-    if (state.zoom === "fit") renderActivePage();
+    renderAllBoardPages();
     if (state.presentationMode === "pdf") renderPresentationSlide();
+  });
+
+  $("#resetView")?.addEventListener("click", () => {
+    recenterBoards();
   });
 
   $("#renderGrid").addEventListener("click", (event) => {
@@ -367,11 +492,15 @@ function bindEvents() {
 
 function init() {
   renderBoardList();
+  renderBoardPanels();
   renderBoard();
   renderPresentation();
   renderRenders();
   renderLinks();
   bindEvents();
+  if (window.lucide?.createIcons) {
+    window.lucide.createIcons();
+  }
 }
 
 init();
