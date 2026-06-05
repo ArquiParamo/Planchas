@@ -56,12 +56,24 @@
                 <h2 id="currentBoardTitle">Plancha 01</h2>
               </div>
               <div class="toolbar-actions">
-                <button class="tool-button compact-tool" id="zoomOut" type="button" title="Alejar" aria-label="Alejar">-</button>
-                <button class="tool-button compact-tool" id="fitBoard" type="button" title="Recentrar planchas">Recentrar</button>
-                <button class="tool-button compact-tool" id="zoomIn" type="button" title="Acercar" aria-label="Acercar">+</button>
-                <a class="tool-button" id="openBoard" target="_blank" rel="noreferrer">Abrir</a>
-                <a class="tool-button" id="downloadBoard">Descargar</a>
-                <button class="tool-button" id="fullscreenBoard" type="button">Expandir</button>
+                <button class="tool-button icon-tool" id="zoomOut" type="button" title="Alejar" aria-label="Alejar">
+                  <i data-lucide="zoom-out" aria-hidden="true"></i>
+                </button>
+                <button class="tool-button icon-tool" id="fitBoard" type="button" title="Recentrar planchas" aria-label="Recentrar planchas">
+                  <i data-lucide="crosshair" aria-hidden="true"></i>
+                </button>
+                <button class="tool-button icon-tool" id="zoomIn" type="button" title="Acercar" aria-label="Acercar">
+                  <i data-lucide="zoom-in" aria-hidden="true"></i>
+                </button>
+                <a class="tool-button icon-tool" id="openBoard" target="_blank" rel="noreferrer" title="Abrir PDF original" aria-label="Abrir PDF original">
+                  <i data-lucide="external-link" aria-hidden="true"></i>
+                </a>
+                <a class="tool-button icon-tool" id="downloadBoard" title="Descargar PDF original" aria-label="Descargar PDF original">
+                  <i data-lucide="download" aria-hidden="true"></i>
+                </a>
+                <button class="tool-button icon-tool" id="fullscreenBoard" type="button" title="Expandir visor" aria-label="Expandir visor">
+                  <i data-lucide="maximize" aria-hidden="true"></i>
+                </button>
               </div>
             </div>
             <div class="pdf-frame-wrap boards-frame-wrap" id="boardsViewport">
@@ -75,14 +87,21 @@
                 </div>
                 <a class="tool-button" id="inlineCanvaExternal" target="_blank" rel="noreferrer">Abrir Canva</a>
               </div>
-              <iframe
-                id="inlineCanvaEmbed"
-                class="inline-canva-embed"
-                title="Presentación del proyecto"
-                loading="lazy"
-                allowfullscreen
-                allow="fullscreen"
-              ></iframe>
+              <div class="inline-slide-viewer">
+                <div class="slide-toolbar">
+                  <button class="tool-button icon-tool" id="inlinePrevSlide" type="button" title="Diapositiva anterior" aria-label="Diapositiva anterior">
+                    <i data-lucide="chevron-left" aria-hidden="true"></i>
+                  </button>
+                  <span id="inlineSlideStatus">Diapositiva</span>
+                  <button class="tool-button icon-tool" id="inlineNextSlide" type="button" title="Diapositiva siguiente" aria-label="Diapositiva siguiente">
+                    <i data-lucide="chevron-right" aria-hidden="true"></i>
+                  </button>
+                </div>
+                <div class="slide-canvas-shell inline-slide-canvas-shell" id="inlinePresentationCanvasShell">
+                  <p class="pdf-loader" id="inlinePresentationLoader">Cargando presentacion</p>
+                  <canvas id="inlinePresentationCanvas" aria-label="Diapositiva renderizada desde PDF"></canvas>
+                </div>
+              </div>
             </div>
           </section>
         </section>
@@ -115,9 +134,13 @@
             </div>
             <div class="presentation-frame pdf-presentation-frame is-active" id="presentationPdf">
               <div class="slide-toolbar">
-                <button class="tool-button compact-tool" id="prevSlide" type="button">-</button>
+                <button class="tool-button icon-tool" id="prevSlide" type="button" title="Diapositiva anterior" aria-label="Diapositiva anterior">
+                  <i data-lucide="chevron-left" aria-hidden="true"></i>
+                </button>
                 <span id="slideStatus">Diapositiva</span>
-                <button class="tool-button compact-tool" id="nextSlide" type="button">+</button>
+                <button class="tool-button icon-tool" id="nextSlide" type="button" title="Diapositiva siguiente" aria-label="Diapositiva siguiente">
+                  <i data-lucide="chevron-right" aria-hidden="true"></i>
+                </button>
               </div>
               <div class="slide-canvas-shell" id="presentationCanvasShell">
                 <p class="pdf-loader" id="presentationLoader">Cargando presentacion</p>

@@ -20,6 +20,7 @@ let activeRenderTask;
 let renderToken = 0;
 let presentationPdf;
 let presentationRenderTask;
+let inlinePresentationRenderTask;
 let presentationPageCount = 0;
 let presentationToken = 0;
 let boardsLoadStarted = false;
@@ -289,19 +290,17 @@ function renderPresentation() {
     $("#inlineCanvaExternal").href = presentation.canvaShareUrl;
     $("#inlineCanvaExternal").textContent = presentation.canvaTitle;
   }
-  if ($("#inlineCanvaEmbed")) {
-    $("#inlineCanvaEmbed").src = presentation.canvaEmbedAvailable
-      ? presentation.canvaEmbedUrl
-      : presentation.localPdfUrl;
-  }
   updatePresentationMode();
+  loadPresentationPdf();
 }
 
 async function loadPresentationPdf() {
   const token = ++presentationToken;
-  const loader = $("#presentationLoader");
-  loader.textContent = "Cargando presentacion";
-  loader.classList.remove("is-hidden");
+  const loaders = [$("#presentationLoader"), $("#inlinePresentationLoader")].filter(Boolean);
+  loaders.forEach((loader) => {
+    loader.textContent = "Cargando presentacion";
+    loader.classList.remove("is-hidden");
+  });
 
   try {
     const pdfjs = await getPdfJs();
@@ -312,16 +311,37 @@ async function loadPresentationPdf() {
     presentationPageCount = pdf.numPages;
     state.slide = Math.min(state.slide, presentationPageCount);
     await renderPresentationSlide();
-    loader.classList.add("is-hidden");
+    loaders.forEach((loader) => loader.classList.add("is-hidden"));
   } catch (error) {
     if (token !== presentationToken) return;
-    loader.textContent = "No se pudo dibujar la presentacion local.";
+    loaders.forEach((loader) => {
+      loader.textContent = "No se pudo dibujar la presentacion local.";
+    });
     console.error(error);
   }
 }
 
+function updateSlideControls() {
+  const statusText = presentationPageCount
+    ? `Diapositiva ${state.slide} / ${presentationPageCount}`
+    : "Diapositiva";
+  ["#slideStatus", "#inlineSlideStatus"].forEach((selector) => {
+    const status = $(selector);
+    if (status) status.textContent = statusText;
+  });
+  ["#prevSlide", "#inlinePrevSlide"].forEach((selector) => {
+    const button = $(selector);
+    if (button) button.disabled = !presentationPageCount || state.slide <= 1;
+  });
+  ["#nextSlide", "#inlineNextSlide"].forEach((selector) => {
+    const button = $(selector);
+    if (button) button.disabled = !presentationPageCount || state.slide >= presentationPageCount;
+  });
+}
+
 async function renderPresentationSlide() {
   if (!presentationPdf) return;
+  updateSlideControls();
   if (presentationRenderTask) {
     presentationRenderTask.cancel();
     presentationRenderTask = null;
@@ -345,13 +365,48 @@ async function renderPresentationSlide() {
   context.setTransform(outputScale, 0, 0, outputScale, 0, 0);
   context.clearRect(0, 0, viewport.width, viewport.height);
 
-  $("#slideStatus").textContent = `Diapositiva ${state.slide} / ${presentationPageCount}`;
-  $("#prevSlide").disabled = state.slide <= 1;
-  $("#nextSlide").disabled = state.slide >= presentationPageCount;
-
   presentationRenderTask = page.render({ canvasContext: context, viewport });
   await presentationRenderTask.promise;
   presentationRenderTask = null;
+  await renderInlinePresentationSlide();
+}
+
+async function renderInlinePresentationSlide() {
+  if (!presentationPdf || !$("#inlinePresentationCanvasShell") || !$("#inlinePresentationCanvas")) return;
+  if (inlinePresentationRenderTask) {
+    inlinePresentationRenderTask.cancel();
+    inlinePresentationRenderTask = null;
+  }
+
+  const page = await presentationPdf.getPage(state.slide);
+  const shell = $("#inlinePresentationCanvasShell");
+  const canvas = $("#inlinePresentationCanvas");
+  const context = canvas.getContext("2d");
+  const baseViewport = page.getViewport({ scale: 1 });
+  const shellWidth = Math.max(shell.clientWidth - 36, 300);
+  const shellHeight = Math.max(shell.clientHeight - 36, 300);
+  const scale = Math.min(shellWidth / baseViewport.width, shellHeight / baseViewport.height);
+  const viewport = page.getViewport({ scale });
+  const outputScale = Math.min(window.devicePixelRatio || 1, 2);
+
+  canvas.width = Math.floor(viewport.width * outputScale);
+  canvas.height = Math.floor(viewport.height * outputScale);
+  canvas.style.width = `${Math.floor(viewport.width)}px`;
+  canvas.style.height = `${Math.floor(viewport.height)}px`;
+  context.setTransform(outputScale, 0, 0, outputScale, 0, 0);
+  context.clearRect(0, 0, viewport.width, viewport.height);
+
+  inlinePresentationRenderTask = page.render({ canvasContext: context, viewport });
+  await inlinePresentationRenderTask.promise;
+  inlinePresentationRenderTask = null;
+}
+
+async function changePresentationSlide(delta) {
+  if (!presentationPageCount) return;
+  const nextSlide = Math.min(Math.max(state.slide + delta, 1), presentationPageCount);
+  if (nextSlide === state.slide) return;
+  state.slide = nextSlide;
+  await renderPresentationSlide();
 }
 
 function renderRenders() {
@@ -456,16 +511,12 @@ function bindEvents() {
     await renderAllBoardPages();
   });
 
-  $("#prevSlide").addEventListener("click", async () => {
-    if (state.slide <= 1) return;
-    state.slide -= 1;
-    await renderPresentationSlide();
+  ["#prevSlide", "#inlinePrevSlide"].forEach((selector) => {
+    $(selector)?.addEventListener("click", () => changePresentationSlide(-1));
   });
 
-  $("#nextSlide").addEventListener("click", async () => {
-    if (state.slide >= presentationPageCount) return;
-    state.slide += 1;
-    await renderPresentationSlide();
+  ["#nextSlide", "#inlineNextSlide"].forEach((selector) => {
+    $(selector)?.addEventListener("click", () => changePresentationSlide(1));
   });
 
   window.addEventListener("resize", () => {
