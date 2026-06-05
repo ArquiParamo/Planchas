@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Visor de planchas finales, presentacion y renders del proyecto Arquitectura de Paramo."
+    />
+    <title>Planchas | Arquitectura de Paramo</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./assets/config.js"></script>
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#planchas" aria-label="Ir a planchas">
+          <img src="./assets/brand/javeriana-logo.png" alt="" />
+          <span>
+            <strong>Planchas</strong>
+            <small>Arquitectura de Paramo</small>
+          </span>
+        </a>
+        <nav class="topnav" aria-label="Secciones">
+          <button class="nav-button is-active" type="button" data-view="planchas">Planchas</button>
+          <button class="nav-button" type="button" data-view="presentacion">Presentacion</button>
+          <button class="nav-button" type="button" data-view="renders">Renders</button>
+          <button class="nav-button" type="button" data-view="accesos">Accesos</button>
+        </nav>
+        <span class="source-pill" id="sourcePill">PDF original</span>
+      </header>
+
+      <main>
+        <section class="view is-active board-view" id="view-planchas" aria-labelledby="boardHeading">
+          <aside class="control-panel">
+            <p class="eyebrow">Entrega final</p>
+            <h1 id="boardHeading">Planchas originales</h1>
+            <p class="intro">
+              Cada plancha se abre desde el PDF original. No hay imagenes, recortes ni versiones
+              optimizadas usadas como sustituto.
+            </p>
+            <div class="board-list" id="boardList" aria-label="Seleccion de planchas"></div>
+            <dl class="board-meta" id="boardMeta"></dl>
+          </aside>
+
+          <section class="pdf-panel" aria-label="Visor de plancha">
+            <div class="panel-toolbar">
+              <div>
+                <p class="toolbar-kicker">Documento activo</p>
+                <h2 id="currentBoardTitle">Plancha 01</h2>
+              </div>
+              <div class="toolbar-actions">
+                <button class="tool-button compact-tool" id="zoomOut" type="button">-</button>
+                <button class="tool-button compact-tool" id="fitBoard" type="button">Ajustar</button>
+                <button class="tool-button compact-tool" id="zoomIn" type="button">+</button>
+                <a class="tool-button" id="openBoard" target="_blank" rel="noreferrer">Abrir</a>
+                <a class="tool-button" id="downloadBoard">Descargar</a>
+                <button class="tool-button" id="fullscreenBoard" type="button">Expandir</button>
+              </div>
+            </div>
+            <div class="pdf-frame-wrap">
+              <div class="pdf-canvas-shell" id="pdfCanvasShell">
+                <p class="pdf-loader" id="pdfLoader">Cargando PDF original</p>
+                <canvas id="boardCanvas" aria-label="Plancha renderizada desde PDF original"></canvas>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <section class="view split-view" id="view-presentacion" aria-labelledby="presentationHeading">
+          <div class="section-copy">
+            <p class="eyebrow">Presentacion</p>
+            <h1 id="presentationHeading">Canva y respaldo local</h1>
+            <p class="intro">
+              El enlace de Canva compartido queda como presentacion principal en curso. El PDF local
+              de la V3 queda disponible como respaldo de lectura.
+            </p>
+            <div class="segmented" aria-label="Modo de presentacion">
+              <button class="segment" type="button" data-presentation-mode="canva">Canva</button>
+              <button class="segment is-active" type="button" data-presentation-mode="pdf">PDF V3</button>
+            </div>
+            <a class="primary-link" id="canvaExternal" target="_blank" rel="noreferrer">Abrir Canva</a>
+          </div>
+          <div class="presentation-stage">
+            <iframe
+              class="presentation-frame"
+              id="canvaFrame"
+              title="Presentacion en Canva"
+              allowfullscreen
+            ></iframe>
+            <div class="presentation-frame pdf-presentation-frame is-active" id="presentationPdf">
+              <div class="slide-toolbar">
+                <button class="tool-button compact-tool" id="prevSlide" type="button">-</button>
+                <span id="slideStatus">Diapositiva</span>
+                <button class="tool-button compact-tool" id="nextSlide" type="button">+</button>
+              </div>
+              <div class="slide-canvas-shell" id="presentationCanvasShell">
+                <p class="pdf-loader" id="presentationLoader">Cargando presentacion</p>
+                <canvas id="presentationCanvas" aria-label="Diapositiva renderizada desde PDF"></canvas>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="view renders-view" id="view-renders" aria-labelledby="rendersHeading">
+          <div class="section-copy compact">
+            <p class="eyebrow">Visualizaciones</p>
+            <h1 id="rendersHeading">Renders del proyecto</h1>
+          </div>
+          <div class="render-grid" id="renderGrid"></div>
+        </section>
+
+        <section class="view access-view" id="view-accesos" aria-labelledby="accessHeading">
+          <div class="section-copy">
+            <p class="eyebrow">Proyecto conectado</p>
+            <h1 id="accessHeading">Accesos externos</h1>
+          </div>
+          <div class="access-grid" id="accessGrid"></div>
+        </section>
+      </main>
+    </div>
+
+    <dialog class="render-dialog" id="renderDialog">
+      <button class="dialog-close" id="closeRender" type="button" aria-label="Cerrar">Cerrar</button>
+      <img id="renderPreview" alt="" />
+      <p id="renderCaption"></p>
+    </dialog>
+  </body>
+</html>
