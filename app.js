@@ -1,6 +1,8 @@
 const config = window.PLANCHAS_CONFIG;
 const LARGE_IMAGE_SCALE = 0.36;
 const DETAIL_IMAGE_SCALE = 0.58;
+const DRAG_THRESHOLD = 5;
+const CANVA_INTERACTION_MS = 4500;
 
 const state = {
   view: "presentacion",
@@ -12,6 +14,18 @@ const state = {
   panStartY: 0,
   startX: 0,
   startY: 0,
+  panMoved: false,
+  panStartedOnCanva: false,
+  canvaInteractionTimer: null,
+  gallery: {
+    isPanning: false,
+    moved: false,
+    suppressClick: false,
+    pointerId: null,
+    startX: 0,
+    startY: 0,
+    scrollLeft: 0
+  },
   render: {
     scale: 1,
     x: 0,
@@ -30,6 +44,7 @@ const state = {
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+const inputId = (event) => event.pointerId ?? "mouse";
 
 function applyPan() {
   const content = $("#presentationContent");
@@ -83,12 +98,30 @@ function getFullscreenElement() {
 function setFullscreenButtonState() {
   const button = $("#fitBoard");
   if (!button) return;
+  if (button.disabled) return;
   const canvaFrame = $(".canva-frame-shell iframe");
   const fullscreenElement = getFullscreenElement();
   const isFullscreen = fullscreenElement === canvaFrame || fullscreenElement === $("#canvaFrameShell");
   button.setAttribute("aria-pressed", String(isFullscreen));
   button.title = isFullscreen ? "Salir de Canva pantalla completa" : "Canva pantalla completa";
   button.setAttribute("aria-label", button.title);
+}
+
+function disableCanvaInteraction() {
+  const shell = $("#canvaFrameShell");
+  shell?.classList.remove("is-interactive");
+  if (state.canvaInteractionTimer) {
+    window.clearTimeout(state.canvaInteractionTimer);
+    state.canvaInteractionTimer = null;
+  }
+}
+
+function enableCanvaInteraction() {
+  const shell = $("#canvaFrameShell");
+  if (!shell?.querySelector("iframe")) return;
+  shell.classList.add("is-interactive");
+  if (state.canvaInteractionTimer) window.clearTimeout(state.canvaInteractionTimer);
+  state.canvaInteractionTimer = window.setTimeout(disableCanvaInteraction, CANVA_INTERACTION_MS);
 }
 
 async function toggleCanvaFullscreen() {
@@ -154,6 +187,7 @@ function renderBoardPanels() {
               alt="${board.title}"
               loading="eager"
               decoding="async"
+              draggable="false"
               fetchpriority="${index < 4 ? "high" : "auto"}"
             />
           </div>
@@ -220,6 +254,10 @@ function renderCanva() {
     iframe.setAttribute("allowfullscreen", "allowfullscreen");
     iframe.allow = "fullscreen";
     shell.append(iframe);
+    const dragLayer = document.createElement("div");
+    dragLayer.className = "canva-drag-layer";
+    dragLayer.setAttribute("aria-hidden", "true");
+    shell.append(dragLayer);
     return;
   }
   const notice = document.createElement("div");
@@ -245,7 +283,7 @@ function renderRenders() {
     .map(
       (render, index) => `
         <button class="render-card" type="button" data-render="${index}">
-          <img src="${render.src}" alt="${render.title}" loading="${index < 3 ? "eager" : "lazy"}" decoding="async" />
+          <img src="${render.src}" alt="${render.title}" loading="${index < 3 ? "eager" : "lazy"}" decoding="async" draggable="false" />
           <span>${render.title}</span>
         </button>
       `
@@ -258,10 +296,37 @@ function setView(viewName) {
   $$(".view").forEach((view) => view.classList.toggle("is-active", view.id === `view-${viewName}`));
   $$(".view-switch").forEach((button) => button.classList.toggle("is-active", button.dataset.view === viewName));
   $("#sourcePill").textContent = viewName === "renders" ? `${config.renders.length} renders` : "Presentación";
+  updateViewToolState();
   if (viewName === "presentacion") requestAnimationFrame(recenterPresentation);
 }
 
+function updateViewToolState() {
+  const disabled = state.view === "renders";
+  const titles = {
+    resetView: "Recentrar presentaciÃ³n",
+    fitBoard: "Canva pantalla completa",
+    zoomOut: "Alejar",
+    zoomIn: "Acercar"
+  };
+  Object.entries(titles).forEach(([id, title]) => {
+    const button = $(`#${id}`);
+    if (!button) return;
+    button.disabled = disabled;
+    button.setAttribute("aria-disabled", String(disabled));
+    if (disabled) {
+      button.title = `${title} no disponible en Renders`;
+      button.setAttribute("aria-label", button.title);
+      if (id === "fitBoard") button.setAttribute("aria-pressed", "false");
+      return;
+    }
+    button.title = title;
+    button.setAttribute("aria-label", title);
+  });
+  if (!disabled) setFullscreenButtonState();
+}
+
 function startPan(event) {
+  if (state.isPanning) return;
   if (event.button !== 0 || event.target.closest("a, button")) return;
   const viewport = $("#presentationViewport");
   if (state.scale > DETAIL_IMAGE_SCALE) {
@@ -274,22 +339,35 @@ function startPan(event) {
   state.panStartY = event.clientY;
   state.startX = state.x;
   state.startY = state.y;
+  state.panMoved = false;
+  state.panStartedOnCanva = !!event.target.closest(".canva-drag-layer");
+  event.preventDefault();
+  if (state.panStartedOnCanva) disableCanvaInteraction();
   viewport.classList.add("is-panning");
-  viewport.setPointerCapture(event.pointerId);
+  if (event.pointerId != null) viewport.setPointerCapture(event.pointerId);
 }
 
 function movePan(event) {
   if (!state.isPanning) return;
-  state.x = state.startX + event.clientX - state.panStartX;
-  state.y = state.startY + event.clientY - state.panStartY;
+  const deltaX = event.clientX - state.panStartX;
+  const deltaY = event.clientY - state.panStartY;
+  if (!state.panMoved && Math.hypot(deltaX, deltaY) > DRAG_THRESHOLD) state.panMoved = true;
+  state.x = state.startX + deltaX;
+  state.y = state.startY + deltaY;
+  event.preventDefault();
   applyPan();
 }
 
 function endPan(event) {
+  if (!state.isPanning) return;
   const viewport = $("#presentationViewport");
+  const wasCanvaClick = state.panStartedOnCanva && !state.panMoved;
   state.isPanning = false;
   viewport.classList.remove("is-panning");
-  if (viewport.hasPointerCapture(event.pointerId)) viewport.releasePointerCapture(event.pointerId);
+  if (event.pointerId != null && viewport.hasPointerCapture(event.pointerId)) viewport.releasePointerCapture(event.pointerId);
+  if (wasCanvaClick) enableCanvaInteraction();
+  state.panStartedOnCanva = false;
+  state.panMoved = false;
 }
 
 function resetRenderZoom() {
@@ -308,11 +386,26 @@ function applyRenderZoom() {
   $("#renderStage")?.classList.toggle("is-zoomed", state.render.scale > 1.01);
 }
 
-function renderZoomAt(delta) {
-  state.render.scale = clamp(state.render.scale * delta, 1, 5.5);
-  if (state.render.scale === 1) {
+function renderZoomAt(delta, event) {
+  const stage = $("#renderStage");
+  if (!stage) return;
+  const rect = stage.getBoundingClientRect();
+  const beforeScale = state.render.scale;
+  const nextScale = clamp(state.render.scale * delta, 1, 5.5);
+  if (nextScale === beforeScale) return;
+  const originX = event ? event.clientX : rect.left + rect.width / 2;
+  const originY = event ? event.clientY : rect.top + rect.height / 2;
+  const localX = originX - rect.left - rect.width / 2;
+  const localY = originY - rect.top - rect.height / 2;
+  const contentX = (localX - state.render.x) / beforeScale;
+  const contentY = (localY - state.render.y) / beforeScale;
+  state.render.scale = nextScale;
+  if (nextScale === 1) {
     state.render.x = 0;
     state.render.y = 0;
+  } else {
+    state.render.x = localX - contentX * nextScale;
+    state.render.y = localY - contentY * nextScale;
   }
   applyRenderZoom();
 }
@@ -336,11 +429,13 @@ function normalizeWheelDelta(event, target) {
 
 function handleRenderWheel(event) {
   if (state.view !== "renders" || event.ctrlKey || $("#renderDialog")?.open) return;
+  if (!event.target.closest("#view-renders")) return;
   const grid = $("#renderGrid");
   if (!grid || grid.scrollWidth <= grid.clientWidth) return;
   const delta = normalizeWheelDelta(event, grid);
   if (!delta) return;
   event.preventDefault();
+  event.stopPropagation();
   grid.scrollLeft += delta;
 }
 
@@ -353,15 +448,21 @@ function pointDistance(a, b) {
 }
 
 function startRenderPointer(event) {
+  if (event.type === "mousedown" && state.render.pointers.size) return;
+  if (event.pointerType === "mouse" && event.button !== 0) return;
   const stage = $("#renderStage");
-  state.render.pointers.set(event.pointerId, renderPoint(event));
-  stage.setPointerCapture(event.pointerId);
+  const key = inputId(event);
+  if (state.render.pointers.has(key)) return;
+  event.preventDefault();
+  state.render.pointers.set(key, renderPoint(event));
+  if (event.pointerId != null) stage.setPointerCapture(event.pointerId);
   if (state.render.pointers.size === 1) {
     state.render.isPanning = true;
     state.render.panStartX = event.clientX;
     state.render.panStartY = event.clientY;
     state.render.startX = state.render.x;
     state.render.startY = state.render.y;
+    if (state.render.scale > 1.01) stage.classList.add("is-panning");
   }
   if (state.render.pointers.size === 2) {
     const [first, second] = [...state.render.pointers.values()];
@@ -371,8 +472,9 @@ function startRenderPointer(event) {
 }
 
 function moveRenderPointer(event) {
-  if (!state.render.pointers.has(event.pointerId)) return;
-  state.render.pointers.set(event.pointerId, renderPoint(event));
+  const key = inputId(event);
+  if (!state.render.pointers.has(key)) return;
+  state.render.pointers.set(key, renderPoint(event));
   if (state.render.pointers.size >= 2) {
     const [first, second] = [...state.render.pointers.values()];
     const distance = pointDistance(first, second);
@@ -385,15 +487,18 @@ function moveRenderPointer(event) {
   if (state.render.isPanning && state.render.scale > 1.01) {
     state.render.x = state.render.startX + event.clientX - state.render.panStartX;
     state.render.y = state.render.startY + event.clientY - state.render.panStartY;
+    event.preventDefault();
     applyRenderZoom();
   }
 }
 
 function endRenderPointer(event) {
   const stage = $("#renderStage");
-  state.render.pointers.delete(event.pointerId);
-  if (stage.hasPointerCapture(event.pointerId)) stage.releasePointerCapture(event.pointerId);
+  const key = inputId(event);
+  state.render.pointers.delete(key);
+  if (event.pointerId != null && stage.hasPointerCapture(event.pointerId)) stage.releasePointerCapture(event.pointerId);
   state.render.isPanning = false;
+  if (!state.render.pointers.size) stage.classList.remove("is-panning");
   if (state.render.pointers.size === 1) {
     const [[remainingId, point]] = state.render.pointers.entries();
     state.render.isPanning = true;
@@ -402,7 +507,49 @@ function endRenderPointer(event) {
     state.render.startX = state.render.x;
     state.render.startY = state.render.y;
     state.render.pointerId = remainingId;
+    if (state.render.scale > 1.01) stage.classList.add("is-panning");
   }
+}
+
+function startRenderGalleryPan(event) {
+  if (state.gallery.isPanning) return;
+  if (state.view !== "renders" || $("#renderDialog")?.open || event.button !== 0) return;
+  const grid = $("#renderGrid");
+  if (!grid || grid.scrollWidth <= grid.clientWidth) return;
+  state.gallery.isPanning = true;
+  state.gallery.moved = false;
+  state.gallery.pointerId = inputId(event);
+  state.gallery.startX = event.clientX;
+  state.gallery.startY = event.clientY;
+  state.gallery.scrollLeft = grid.scrollLeft;
+  grid.classList.add("is-grabbing");
+  if (event.pointerId != null) grid.setPointerCapture(event.pointerId);
+}
+
+function moveRenderGalleryPan(event) {
+  if (!state.gallery.isPanning || inputId(event) !== state.gallery.pointerId) return;
+  const grid = $("#renderGrid");
+  if (!grid) return;
+  const deltaX = event.clientX - state.gallery.startX;
+  const deltaY = event.clientY - state.gallery.startY;
+  if (!state.gallery.moved && Math.hypot(deltaX, deltaY) > DRAG_THRESHOLD) state.gallery.moved = true;
+  if (!state.gallery.moved) return;
+  event.preventDefault();
+  grid.scrollLeft = state.gallery.scrollLeft - deltaX;
+}
+
+function endRenderGalleryPan(event) {
+  if (!state.gallery.isPanning || inputId(event) !== state.gallery.pointerId) return;
+  const grid = $("#renderGrid");
+  if (event.pointerId != null && grid?.hasPointerCapture(event.pointerId)) grid.releasePointerCapture(event.pointerId);
+  grid?.classList.remove("is-grabbing");
+  state.gallery.isPanning = false;
+  state.gallery.pointerId = null;
+  state.gallery.suppressClick = state.gallery.moved;
+  state.gallery.moved = false;
+  window.setTimeout(() => {
+    state.gallery.suppressClick = false;
+  }, 0);
 }
 
 function bindEvents() {
@@ -420,14 +567,33 @@ function bindEvents() {
   viewport.addEventListener("pointermove", movePan);
   viewport.addEventListener("pointerup", endPan);
   viewport.addEventListener("pointercancel", endPan);
+  viewport.addEventListener("mousedown", startPan);
+  window.addEventListener("mousemove", movePan);
+  window.addEventListener("mouseup", endPan);
   viewport.addEventListener("wheel", (event) => {
     event.preventDefault();
     zoomAt(event.deltaY < 0 ? 1.14 : 1 / 1.14, event.clientX, event.clientY);
   }, { passive: false });
 
   $("#view-renders").addEventListener("wheel", handleRenderWheel, { passive: false });
+  $("#renderGrid").addEventListener("wheel", handleRenderWheel, { passive: false });
+  document.addEventListener("wheel", handleRenderWheel, { passive: false });
+
+  $("#renderGrid").addEventListener("pointerdown", startRenderGalleryPan);
+  $("#renderGrid").addEventListener("pointermove", moveRenderGalleryPan);
+  $("#renderGrid").addEventListener("pointerup", endRenderGalleryPan);
+  $("#renderGrid").addEventListener("pointercancel", endRenderGalleryPan);
+  $("#renderGrid").addEventListener("mousedown", startRenderGalleryPan);
+  window.addEventListener("mousemove", moveRenderGalleryPan);
+  window.addEventListener("mouseup", endRenderGalleryPan);
 
   $("#renderGrid").addEventListener("click", (event) => {
+    if (state.gallery.suppressClick) {
+      event.preventDefault();
+      event.stopPropagation();
+      state.gallery.suppressClick = false;
+      return;
+    }
     const card = event.target.closest("[data-render]");
     if (!card) return;
     openRender(Number(card.dataset.render));
@@ -442,12 +608,15 @@ function bindEvents() {
   const renderStage = $("#renderStage");
   renderStage.addEventListener("wheel", (event) => {
     event.preventDefault();
-    renderZoomAt(event.deltaY < 0 ? 1.16 : 1 / 1.16);
+    renderZoomAt(event.deltaY < 0 ? 1.16 : 1 / 1.16, event);
   }, { passive: false });
   renderStage.addEventListener("pointerdown", startRenderPointer);
   renderStage.addEventListener("pointermove", moveRenderPointer);
   renderStage.addEventListener("pointerup", endRenderPointer);
   renderStage.addEventListener("pointercancel", endRenderPointer);
+  renderStage.addEventListener("mousedown", startRenderPointer);
+  window.addEventListener("mousemove", moveRenderPointer);
+  window.addEventListener("mouseup", endRenderPointer);
   renderStage.addEventListener("dblclick", resetRenderZoom);
 
   window.addEventListener("resize", recenterPresentation);
