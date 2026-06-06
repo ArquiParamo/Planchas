@@ -48,9 +48,9 @@ window.PLANCHAS_CONFIG = {
   },
   renders: [
     {
-      title: "Vista inferior del observatorio de colibríes",
+      title: "Vista inferior desde el observatorio de colibríes",
       src: "./assets/renders/render-03.png",
-      description: "Vista inferior del observatorio de colibríes"
+      description: "Vista inferior desde el observatorio de colibríes"
     },
     {
       title: "Fachada posterior del proyecto",
@@ -63,14 +63,14 @@ window.PLANCHAS_CONFIG = {
       description: "Fachada izquierda del proyecto"
     },
     {
-      title: "Recorrido exterior de memoria",
+      title: "Vista inferior desde recorrido de memoria exterior",
       src: "./assets/renders/render-08.png",
-      description: "Recorrido exterior de memoria desde el nivel inferior"
+      description: "Vista inferior desde recorrido de memoria exterior"
     },
     {
-      title: "Palimpsesto territorial",
+      title: "Vista aérea del palimpsesto",
       src: "./assets/renders/render-09.png",
-      description: "Vista aérea del palimpsesto territorial"
+      description: "Vista aérea del palimpsesto"
     },
     {
       title: "Observatorio en la distancia",
@@ -78,9 +78,9 @@ window.PLANCHAS_CONFIG = {
       description: "Vista lejana del observatorio de colibríes"
     },
     {
-      title: "Recorrido de memoria exterior",
+      title: "Vista desde recorrido de memoria exterior",
       src: "./assets/renders/render-02.png",
-      description: "Recorrido exterior de memoria"
+      description: "Vista desde recorrido de memoria exterior"
     },
     {
       title: "Observatorio de colibríes",
@@ -88,9 +88,9 @@ window.PLANCHAS_CONFIG = {
       description: "Observatorio de colibríes"
     },
     {
-      title: "Cable aéreo y cubierta verde",
+      title: "Vista aérea del eje del cable aéreo y la cubierta verde",
       src: "./assets/renders/render-01.png",
-      description: "Vista aérea del cable aéreo y la cubierta verde"
+      description: "Vista aérea del eje del cable aéreo y la cubierta verde"
     },
     {
       title: "Interior del observatorio",

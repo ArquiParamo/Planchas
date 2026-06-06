@@ -583,6 +583,13 @@ h3 {
   transform: none;
 }
 
+.render-strip.is-focus-suppressed .render-card:hover,
+.render-strip.is-focus-suppressed .render-card:focus-visible {
+  border-color: var(--line);
+  box-shadow: 0 10px 28px rgba(13, 32, 27, 0.12);
+  transform: none;
+}
+
 .render-card img {
   display: block;
   width: 100%;
@@ -600,7 +607,9 @@ h3 {
   transform: scale(1.035);
 }
 
-.render-strip.is-grabbing .render-card img {
+.render-strip.is-grabbing .render-card img,
+.render-strip.is-focus-suppressed .render-card:hover img,
+.render-strip.is-focus-suppressed .render-card:focus-visible img {
   filter: none;
   transform: none;
 }
@@ -629,7 +638,9 @@ h3 {
   opacity: 1;
 }
 
-.render-strip.is-grabbing .render-description {
+.render-strip.is-grabbing .render-description,
+.render-strip.is-focus-suppressed .render-card:hover .render-description,
+.render-strip.is-focus-suppressed .render-card:focus-visible .render-description {
   opacity: 0;
 }
 

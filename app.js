@@ -409,6 +409,24 @@ function resetRenderZoom() {
   applyRenderZoom();
 }
 
+function suppressRenderCardFocus() {
+  const grid = $("#renderGrid");
+  grid?.classList.add("is-focus-suppressed");
+  $$(".render-card").forEach((card) => card.blur());
+  if (document.activeElement?.closest?.(".render-card, #renderDialog")) {
+    document.activeElement.blur();
+  }
+  window.setTimeout(() => {
+    if (document.activeElement?.closest?.(".render-card, #renderDialog")) {
+      document.activeElement.blur();
+    }
+  }, 0);
+}
+
+function restoreRenderCardFocus() {
+  $("#renderGrid")?.classList.remove("is-focus-suppressed");
+}
+
 function applyRenderZoom() {
   const image = $("#renderPreview");
   if (!image) return;
@@ -443,6 +461,7 @@ function renderZoomAt(delta, event) {
 function openRender(index) {
   const render = config.renders[index];
   if (!render) return;
+  restoreRenderCardFocus();
   state.render.index = index;
   $("#renderPreview").src = render.src;
   $("#renderPreview").alt = render.title;
@@ -685,6 +704,8 @@ function bindEvents() {
   window.addEventListener("wheel", handleRenderWheel, { passive: false, capture: true });
 
   $("#renderGrid").addEventListener("pointerdown", startRenderGalleryPan);
+  $("#renderGrid").addEventListener("pointerenter", restoreRenderCardFocus);
+  $("#renderGrid").addEventListener("pointermove", restoreRenderCardFocus);
   $("#renderGrid").addEventListener("pointermove", moveRenderGalleryPan);
   $("#renderGrid").addEventListener("pointerup", endRenderGalleryPan);
   $("#renderGrid").addEventListener("pointercancel", endRenderGalleryPan);
@@ -714,6 +735,7 @@ function bindEvents() {
     state.render.index = -1;
     $("#renderDialog").classList.remove("is-expanded");
     resetRenderZoom();
+    suppressRenderCardFocus();
     setFullscreenButtonState();
   });
   $("#renderDialog").addEventListener("click", (event) => {
