@@ -16,10 +16,10 @@
     <link rel="preload" as="image" href="./assets/boards/board-02-large.webp" />
     <link rel="preload" as="image" href="./assets/boards/board-03-large.webp" />
     <link rel="preload" as="image" href="./assets/boards/board-04-large.webp" />
-    <link rel="stylesheet" href="./styles.css?v=20260606-121200" />
-    <script src="./assets/config.js?v=20260606-121200"></script>
+    <link rel="stylesheet" href="./styles.css?v=20260606-124500" />
+    <script src="./assets/config.js?v=20260606-124500"></script>
     <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
-    <script src="./app.js?v=20260606-121200" defer></script>
+    <script src="./app.js?v=20260606-124500" defer></script>
   </head>
   <body>
     <div class="app-shell">
@@ -47,11 +47,11 @@
                 </a>
               </div>
               <div class="internal-actions" aria-label="Herramientas de vista">
+                <button class="internal-tool" id="fitBoard" type="button" title="Ampliar presentación" aria-label="Ampliar presentación" aria-pressed="false">
+                  <i data-lucide="maximize-2" aria-hidden="true"></i>
+                </button>
                 <button class="internal-tool" id="zoomOut" type="button" title="Alejar" aria-label="Alejar">
                   <i data-lucide="zoom-out" aria-hidden="true"></i>
-                </button>
-                <button class="internal-tool" id="fitBoard" type="button" title="Recentrar vista" aria-label="Recentrar vista">
-                  <i data-lucide="scan" aria-hidden="true"></i>
                 </button>
                 <button class="internal-tool" id="zoomIn" type="button" title="Acercar" aria-label="Acercar">
                   <i data-lucide="zoom-in" aria-hidden="true"></i>

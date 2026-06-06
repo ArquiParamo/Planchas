@@ -86,6 +86,43 @@ function recenterPresentation() {
   applyPan();
 }
 
+function getFullscreenElement() {
+  return document.fullscreenElement || document.webkitFullscreenElement || null;
+}
+
+function setFullscreenButtonState() {
+  const button = $("#fitBoard");
+  if (!button) return;
+  const isFullscreen = Boolean(getFullscreenElement());
+  button.setAttribute("aria-pressed", String(isFullscreen));
+  button.title = isFullscreen ? "Salir de pantalla completa" : "Ampliar presentación";
+  button.setAttribute("aria-label", button.title);
+}
+
+async function togglePresentationFullscreen() {
+  const fullscreenElement = getFullscreenElement();
+  if (fullscreenElement) {
+    const exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen;
+    if (exitFullscreen) await exitFullscreen.call(document);
+    return;
+  }
+
+  if (state.view !== "presentacion") setView("presentacion");
+  const target = $(".app-shell") || document.documentElement;
+  const requestFullscreen = target.requestFullscreen || target.webkitRequestFullscreen;
+  if (!requestFullscreen) {
+    zoomAt(1.35, window.innerWidth / 2, window.innerHeight / 2);
+    return;
+  }
+
+  try {
+    await requestFullscreen.call(target);
+    requestAnimationFrame(recenterPresentation);
+  } catch {
+    zoomAt(1.35, window.innerWidth / 2, window.innerHeight / 2);
+  }
+}
+
 function zoomAt(delta, originX, originY) {
   const viewport = $("#presentationViewport");
   if (!viewport) return;
@@ -374,7 +411,7 @@ function bindEvents() {
   });
 
   $("#resetView").addEventListener("click", recenterPresentation);
-  $("#fitBoard").addEventListener("click", recenterPresentation);
+  $("#fitBoard").addEventListener("click", togglePresentationFullscreen);
   $("#zoomIn").addEventListener("click", () => zoomAt(1.24, window.innerWidth / 2, window.innerHeight / 2));
   $("#zoomOut").addEventListener("click", () => zoomAt(1 / 1.24, window.innerWidth / 2, window.innerHeight / 2));
 
@@ -418,6 +455,8 @@ function bindEvents() {
   renderStage.addEventListener("dblclick", resetRenderZoom);
 
   window.addEventListener("resize", recenterPresentation);
+  document.addEventListener("fullscreenchange", setFullscreenButtonState);
+  document.addEventListener("webkitfullscreenchange", setFullscreenButtonState);
 }
 
 function init() {
