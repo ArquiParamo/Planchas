@@ -5,7 +5,9 @@ window.PLANCHAS_CONFIG = {
       id: "1",
       title: "Plancha 01",
       fileName: "1.pdf",
-      route: "/pdf/1",
+      pdfRoute: "/pdf/1",
+      previewSrc: "./assets/boards/board-01-preview.webp",
+      largeSrc: "./assets/boards/board-01-large.webp",
       sizeBytes: 415824491,
       sha256: "0459E951D6109819075A33393ED05FAF3DBEC3825B9870C1FEED0C367E51B3FF"
     },
@@ -13,7 +15,9 @@ window.PLANCHAS_CONFIG = {
       id: "2",
       title: "Plancha 02",
       fileName: "2.pdf",
-      route: "/pdf/2",
+      pdfRoute: "/pdf/2",
+      previewSrc: "./assets/boards/board-02-preview.webp",
+      largeSrc: "./assets/boards/board-02-large.webp",
       sizeBytes: 306117625,
       sha256: "4C96CB64B6AD66EB58459DCD3F73562D4BA05F1BCA7B94BB5584CF09FDDB98D7"
     },
@@ -21,7 +25,9 @@ window.PLANCHAS_CONFIG = {
       id: "3",
       title: "Plancha 03",
       fileName: "3.pdf",
-      route: "/pdf/3",
+      pdfRoute: "/pdf/3",
+      previewSrc: "./assets/boards/board-03-preview.webp",
+      largeSrc: "./assets/boards/board-03-large.webp",
       sizeBytes: 242736165,
       sha256: "7A8889BECA5AD60DD4B9B11173123084F47C53F37E9CC9F26DA10407A7B3BAF7"
     },
@@ -29,7 +35,9 @@ window.PLANCHAS_CONFIG = {
       id: "4",
       title: "Plancha 04",
       fileName: "4.pdf",
-      route: "/pdf/4",
+      pdfRoute: "/pdf/4",
+      previewSrc: "./assets/boards/board-04-preview.webp",
+      largeSrc: "./assets/boards/board-04-large.webp",
       sizeBytes: 145130720,
       sha256: "57F399CAC69FE8F32E718C4074ACA5BAEB28001155CB1F3DA4768FFB9B92AF8A"
     }
@@ -37,7 +45,7 @@ window.PLANCHAS_CONFIG = {
   presentation: {
     canvaStatus: "complete",
     canvaDesignId: "DAHLrjS3wfc",
-    canvaTitle: "Presentacion principal en Canva",
+    canvaTitle: "Presentación principal en Canva",
     canvaShareUrl: "https://canva.link/r5cbqk33prfx7po",
     canvaResolvedUrl: "https://www.canva.com/design/DAHLrjS3wfc/p21bDaqrnU1aAsj0MV_kPg/edit",
     canvaEmbedUrl: "https://www.canva.com/design/DAHLrjS3wfc/view?embed",
@@ -60,13 +68,13 @@ window.PLANCHAS_CONFIG = {
       title: "Mapa biodiverso",
       label: "Abrir mapa",
       url: "https://mapa-biodiverso-chingaza.arqiparamo.workers.dev/",
-      note: "Sitio publico verificado por HTTP 200."
+      note: "Sitio público verificado por HTTP 200."
     },
     {
-      title: "Esquema de gestion",
+      title: "Esquema de gestión",
       label: "Abrir esquema",
       url: "https://esq-gestion.arqiparamo.workers.dev/",
-      note: "Sitio publico verificado por HTTP 200."
+      note: "Sitio público verificado por HTTP 200."
     }
   ]
 };

@@ -5,25 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Visor navegable de planchas, presentacion de Canva y renders del proyecto Arquitectura de Paramo."
+      content="Visor navegable de planchas, presentación de Canva y renders del proyecto Arquitectura de Páramo."
     />
-    <title>Planchas | Arquitectura de Paramo</title>
-    <link rel="stylesheet" href="./styles.css?v=20260606-070042" />
-    <script src="./assets/config.js?v=20260606-070042"></script>
+    <title>Planchas | Arquitectura de Páramo</title>
+    <link rel="preload" as="image" href="./assets/boards/board-01-preview.webp" />
+    <link rel="preload" as="image" href="./assets/boards/board-02-preview.webp" />
+    <link rel="preload" as="image" href="./assets/boards/board-03-preview.webp" />
+    <link rel="preload" as="image" href="./assets/boards/board-04-preview.webp" />
+    <link rel="stylesheet" href="./styles.css?v=20260606-090500" />
+    <script src="./assets/config.js?v=20260606-090500"></script>
     <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
-    <script src="./app.js?v=20260606-070042" defer></script>
+    <script src="./app.js?v=20260606-090500" defer></script>
   </head>
   <body>
     <div class="app-shell">
-      <header class="topbar">
-        <a class="brand" href="#presentacion" aria-label="Ir a presentacion">
+      <aside class="side-panel" aria-label="Navegación de presentación">
+        <a class="brand" href="#presentacion" aria-label="Ir a presentación">
           <img src="./assets/brand/javeriana-logo.png" alt="" />
           <span>
             <strong>Presentación</strong>
             <small>Arquitectura de Páramo</small>
           </span>
         </a>
-        <div class="toolbar action-toolbar" aria-label="Controles rápidos">
+
+        <div class="side-actions" aria-label="Controles principales">
           <button class="action-button" id="resetView" type="button" title="Recentrar presentación" aria-label="Recentrar presentación">
             <i data-lucide="crosshair" aria-hidden="true"></i>
             <span>Recentrar</span>
@@ -37,11 +42,10 @@
             <span>Esc. gestión</span>
           </a>
         </div>
-        <span class="source-pill" id="sourcePill">Presentación</span>
-      </header>
 
-      <main class="workspace">
-        <aside class="side-menu" aria-label="Apartados">
+        <span class="source-pill" id="sourcePill">Presentación</span>
+
+        <nav class="side-menu" aria-label="Apartados">
           <button class="nav-button is-active" type="button" data-view="presentacion">
             <i data-lucide="presentation" aria-hidden="true"></i>
             <span>Presentación</span>
@@ -50,8 +54,10 @@
             <i data-lucide="images" aria-hidden="true"></i>
             <span>Renders</span>
           </button>
-        </aside>
+        </nav>
+      </aside>
 
+      <main class="workspace">
         <section class="view is-active presentation-view" id="view-presentacion" aria-labelledby="presentationHeading">
           <div class="section-head">
             <div>
@@ -73,7 +79,7 @@
 
           <div class="pan-viewport" id="presentationViewport" aria-label="Espacio navegable de presentación">
             <div class="pan-content" id="presentationContent">
-              <section class="boards-strip" id="boardsStrip" aria-label="Cuatro planchas renderizadas desde PDF original"></section>
+              <section class="boards-strip" id="boardsStrip" aria-label="Cuatro planchas"></section>
               <section class="canva-stage" id="canvaStage" aria-labelledby="canvaHeading">
                 <div class="canva-heading">
                   <div>
@@ -104,7 +110,9 @@
 
     <dialog class="render-dialog" id="renderDialog">
       <button class="dialog-close" id="closeRender" type="button" aria-label="Cerrar">Cerrar</button>
-      <img id="renderPreview" alt="" />
+      <div class="render-stage" id="renderStage">
+        <img id="renderPreview" alt="" />
+      </div>
       <p id="renderCaption"></p>
     </dialog>
   </body>
