@@ -672,6 +672,12 @@ h3 {
   border-radius: 0;
 }
 
+.render-dialog.is-expanded {
+  width: 100vw;
+  height: 100dvh;
+  border-radius: 0;
+}
+
 .render-dialog::backdrop {
   background: rgba(4, 10, 8, 0.74);
 }

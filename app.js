@@ -110,7 +110,8 @@ function setFullscreenButtonState() {
     button.setAttribute("aria-label", button.title);
   }
   if (renderButton) {
-    const renderFullscreen = fullscreenElement === $("#renderDialog") || fullscreenElement === $("#renderStage");
+    const dialog = $("#renderDialog");
+    const renderFullscreen = fullscreenElement === dialog || fullscreenElement === $("#renderStage") || dialog?.classList.contains("is-expanded");
     renderButton.setAttribute("aria-pressed", String(renderFullscreen));
     renderButton.title = renderFullscreen ? "Salir de pantalla completa" : "Pantalla completa";
     renderButton.setAttribute("aria-label", renderButton.title);
@@ -468,19 +469,30 @@ function navigateRender(offset) {
 
 async function toggleRenderFullscreen() {
   const fullscreenElement = getFullscreenElement();
+  const target = $("#renderDialog");
   if (fullscreenElement) {
     const exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen;
     if (exitFullscreen) await exitFullscreen.call(document);
+    setFullscreenButtonState();
     return;
   }
-  const target = $("#renderDialog");
+  if (target.classList.contains("is-expanded")) {
+    target.classList.remove("is-expanded");
+    setFullscreenButtonState();
+    return;
+  }
   const requestFullscreen = target.requestFullscreen || target.webkitRequestFullscreen;
-  if (!requestFullscreen) return;
+  if (!requestFullscreen) {
+    target.classList.add("is-expanded");
+    setFullscreenButtonState();
+    return;
+  }
   try {
     await requestFullscreen.call(target);
   } catch {
-    setFullscreenButtonState();
+    target.classList.add("is-expanded");
   }
+  setFullscreenButtonState();
 }
 
 function normalizeWheelDelta(event, target) {
@@ -701,7 +713,9 @@ function bindEvents() {
   $("#renderFullscreen").addEventListener("click", toggleRenderFullscreen);
   $("#renderDialog").addEventListener("close", () => {
     state.render.index = -1;
+    $("#renderDialog").classList.remove("is-expanded");
     resetRenderZoom();
+    setFullscreenButtonState();
   });
   $("#renderDialog").addEventListener("click", (event) => {
     if (event.target.id === "renderDialog") $("#renderDialog").close();
