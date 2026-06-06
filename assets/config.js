@@ -47,16 +47,56 @@ window.PLANCHAS_CONFIG = {
     canvaEmbedAvailable: true
   },
   renders: [
-    { title: "Render 01", src: "./assets/renders/render-01.png" },
-    { title: "Render 02", src: "./assets/renders/render-02.png" },
-    { title: "Render 03", src: "./assets/renders/render-03.png" },
-    { title: "Render 04", src: "./assets/renders/render-04.png" },
-    { title: "Render 05", src: "./assets/renders/render-05.png" },
-    { title: "Render 06", src: "./assets/renders/render-06.png" },
-    { title: "Render 07", src: "./assets/renders/render-07.png" },
-    { title: "Render 08", src: "./assets/renders/render-08.png" },
-    { title: "Render 09", src: "./assets/renders/render-09.png" },
-    { title: "Render 10", src: "./assets/renders/render-10.png" }
+    {
+      title: "Render 03",
+      src: "./assets/renders/render-03.png",
+      description: "Vista inferior del observatorio de colibríes"
+    },
+    {
+      title: "Render 04",
+      src: "./assets/renders/render-04.png",
+      description: "Fachada posterior del proyecto"
+    },
+    {
+      title: "Render 05",
+      src: "./assets/renders/render-05.png",
+      description: "Fachada izquierda del proyecto"
+    },
+    {
+      title: "Render 08",
+      src: "./assets/renders/render-08.png",
+      description: "Recorrido exterior de memoria desde el nivel inferior"
+    },
+    {
+      title: "Render 09",
+      src: "./assets/renders/render-09.png",
+      description: "Vista aérea del palimpsesto territorial"
+    },
+    {
+      title: "Render 07",
+      src: "./assets/renders/render-07.png",
+      description: "Vista lejana del observatorio de colibríes"
+    },
+    {
+      title: "Render 02",
+      src: "./assets/renders/render-02.png",
+      description: "Recorrido exterior de memoria"
+    },
+    {
+      title: "Render 10",
+      src: "./assets/renders/render-10.png",
+      description: "Observatorio de colibríes"
+    },
+    {
+      title: "Render 01",
+      src: "./assets/renders/render-01.png",
+      description: "Vista aérea del cable aéreo y la cubierta verde"
+    },
+    {
+      title: "Render 06",
+      src: "./assets/renders/render-06.png",
+      description: "Interior del observatorio de colibríes"
+    }
   ],
   links: [
     {

@@ -8,18 +8,14 @@
       content="Visor navegable de planchas, presentación de Canva y renders del proyecto Arquitectura de Páramo."
     />
     <title>Planchas | Arquitectura de Páramo</title>
-    <link rel="preload" as="image" href="./assets/boards/board-01-preview.webp" />
-    <link rel="preload" as="image" href="./assets/boards/board-02-preview.webp" />
-    <link rel="preload" as="image" href="./assets/boards/board-03-preview.webp" />
-    <link rel="preload" as="image" href="./assets/boards/board-04-preview.jpg" />
     <link rel="preload" as="image" href="./assets/boards/board-01-large.webp" />
     <link rel="preload" as="image" href="./assets/boards/board-02-large.webp" />
     <link rel="preload" as="image" href="./assets/boards/board-03-large.webp" />
     <link rel="preload" as="image" href="./assets/boards/board-04-large.webp" />
-    <link rel="stylesheet" href="./styles.css?v=20260606-153500" />
-    <script src="./assets/config.js?v=20260606-153500"></script>
+    <link rel="stylesheet" href="./styles.css?v=20260606-182000" />
+    <script src="./assets/config.js?v=20260606-182000"></script>
     <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
-    <script src="./app.js?v=20260606-153500" defer></script>
+    <script src="./app.js?v=20260606-182000" defer></script>
   </head>
   <body>
     <div class="app-shell">
@@ -104,12 +100,30 @@
       </main>
     </div>
 
-    <dialog class="render-dialog" id="renderDialog">
-      <button class="dialog-close" id="closeRender" type="button" aria-label="Cerrar">Cerrar</button>
+    <dialog class="render-dialog" id="renderDialog" aria-labelledby="renderTitle">
+      <div class="render-dialog-toolbar">
+        <button class="dialog-tool" id="closeRender" type="button" title="Cerrar" aria-label="Cerrar">
+          <i data-lucide="x" aria-hidden="true"></i>
+        </button>
+        <div class="render-dialog-copy">
+          <h2 id="renderTitle">Render</h2>
+          <p id="renderCaption"></p>
+        </div>
+        <div class="render-dialog-actions" aria-label="Controles del render">
+          <button class="dialog-tool" id="prevRender" type="button" title="Render anterior" aria-label="Render anterior">
+            <i data-lucide="chevron-left" aria-hidden="true"></i>
+          </button>
+          <button class="dialog-tool" id="nextRender" type="button" title="Render siguiente" aria-label="Render siguiente">
+            <i data-lucide="chevron-right" aria-hidden="true"></i>
+          </button>
+          <button class="dialog-tool" id="renderFullscreen" type="button" title="Pantalla completa" aria-label="Pantalla completa" aria-pressed="false">
+            <i data-lucide="maximize-2" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
       <div class="render-stage" id="renderStage">
         <img id="renderPreview" alt="" draggable="false" />
       </div>
-      <p id="renderCaption"></p>
     </dialog>
   </body>
 </html>

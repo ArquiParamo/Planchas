@@ -21,12 +21,15 @@ const state = {
     isPanning: false,
     moved: false,
     suppressClick: false,
+    pendingOpenIndex: null,
+    clickOpened: false,
     pointerId: null,
     startX: 0,
     startY: 0,
     scrollLeft: 0
   },
   render: {
+    index: -1,
     scale: 1,
     x: 0,
     y: 0,
@@ -97,14 +100,21 @@ function getFullscreenElement() {
 
 function setFullscreenButtonState() {
   const button = $("#fitBoard");
-  if (!button) return;
-  if (button.disabled) return;
+  const renderButton = $("#renderFullscreen");
   const canvaFrame = $(".canva-frame-shell iframe");
   const fullscreenElement = getFullscreenElement();
   const isFullscreen = fullscreenElement === canvaFrame || fullscreenElement === $("#canvaFrameShell");
-  button.setAttribute("aria-pressed", String(isFullscreen));
-  button.title = isFullscreen ? "Salir de Canva pantalla completa" : "Canva pantalla completa";
-  button.setAttribute("aria-label", button.title);
+  if (button && !button.disabled) {
+    button.setAttribute("aria-pressed", String(isFullscreen));
+    button.title = isFullscreen ? "Salir de Canva pantalla completa" : "Canva pantalla completa";
+    button.setAttribute("aria-label", button.title);
+  }
+  if (renderButton) {
+    const renderFullscreen = fullscreenElement === $("#renderDialog") || fullscreenElement === $("#renderStage");
+    renderButton.setAttribute("aria-pressed", String(renderFullscreen));
+    renderButton.title = renderFullscreen ? "Salir de pantalla completa" : "Pantalla completa";
+    renderButton.setAttribute("aria-label", renderButton.title);
+  }
 }
 
 function disableCanvaInteraction() {
@@ -122,6 +132,13 @@ function enableCanvaInteraction() {
   shell.classList.add("is-interactive");
   if (state.canvaInteractionTimer) window.clearTimeout(state.canvaInteractionTimer);
   state.canvaInteractionTimer = window.setTimeout(disableCanvaInteraction, CANVA_INTERACTION_MS);
+}
+
+function disableCanvaInteractionOutside(event) {
+  const shell = $("#canvaFrameShell");
+  if (!shell?.classList.contains("is-interactive")) return;
+  if (event?.target?.closest?.("#canvaFrameShell")) return;
+  disableCanvaInteraction();
 }
 
 async function toggleCanvaFullscreen() {
@@ -171,19 +188,22 @@ function zoomAt(delta, originX, originY) {
 function renderBoardPanels() {
   $("#boardsStrip").innerHTML = config.boards
     .map(
-      (board, index) => `
+      (board, index) => {
+        const initialSrc = board.largeSrc || board.detailSrc || board.previewSrc || "";
+        const initialQuality = board.largeSrc ? "large" : board.detailSrc ? "detail" : board.previewSrc ? "preview" : "";
+        return `
         <article class="board-panel" data-board-panel="${board.id}">
           <header>
             <span>${board.title}</span>
           </header>
-          <div class="board-canvas-shell" data-board-shell="${board.id}" style="--board-preview: url('${board.previewSrc || board.largeSrc || ""}')">
+          <div class="board-canvas-shell" data-board-shell="${board.id}">
             <img
               class="board-image"
               data-board-image="${board.id}"
               data-large-src="${board.largeSrc || ""}"
               data-detail-src="${board.detailSrc || ""}"
-              data-quality="${board.previewSrc ? "preview" : board.largeSrc ? "large" : ""}"
-              src="${board.previewSrc || board.largeSrc || ""}"
+              data-quality="${initialQuality}"
+              src="${initialSrc}"
               alt="${board.title}"
               loading="eager"
               decoding="async"
@@ -192,7 +212,8 @@ function renderBoardPanels() {
             />
           </div>
         </article>
-      `
+      `;
+      }
     )
     .join("");
 
@@ -228,13 +249,18 @@ function upgradeBoardImages(useDetail = false) {
 }
 
 function scheduleLargeBoardUpgrade() {
-  const run = () => {
-    if (state.scale > LARGE_IMAGE_SCALE) upgradeBoardImages(false);
+  const runLarge = () => {
+    upgradeBoardImages(false);
+  };
+  const runDetail = () => {
+    upgradeBoardImages(true);
   };
   if ("requestIdleCallback" in window) {
-    window.requestIdleCallback(run, { timeout: 2500 });
+    window.requestIdleCallback(runLarge, { timeout: 1600 });
+    window.requestIdleCallback(runDetail, { timeout: 4200 });
   } else {
-    window.setTimeout(run, 1800);
+    window.setTimeout(runLarge, 800);
+    window.setTimeout(runDetail, 2200);
   }
 }
 
@@ -258,6 +284,7 @@ function renderCanva() {
     dragLayer.className = "canva-drag-layer";
     dragLayer.setAttribute("aria-hidden", "true");
     shell.append(dragLayer);
+    shell.addEventListener("mouseleave", disableCanvaInteraction);
     return;
   }
   const notice = document.createElement("div");
@@ -282,9 +309,10 @@ function renderRenders() {
   $("#renderGrid").innerHTML = config.renders
     .map(
       (render, index) => `
-        <button class="render-card" type="button" data-render="${index}">
+        <button class="render-card" type="button" data-render="${index}" aria-label="${render.title}: ${render.description || ""}">
           <img src="${render.src}" alt="${render.title}" loading="${index < 3 ? "eager" : "lazy"}" decoding="async" draggable="false" />
-          <span>${render.title}</span>
+          <span class="render-title">${render.title}</span>
+          <span class="render-description">${render.description || render.title}</span>
         </button>
       `
     )
@@ -371,11 +399,13 @@ function endPan(event) {
 }
 
 function resetRenderZoom() {
+  const stage = $("#renderStage");
   state.render.scale = 1;
   state.render.x = 0;
   state.render.y = 0;
   state.render.isPanning = false;
   state.render.pointers.clear();
+  stage?.classList.remove("is-panning");
   applyRenderZoom();
 }
 
@@ -413,11 +443,44 @@ function renderZoomAt(delta, event) {
 function openRender(index) {
   const render = config.renders[index];
   if (!render) return;
+  state.render.index = index;
   $("#renderPreview").src = render.src;
   $("#renderPreview").alt = render.title;
-  $("#renderCaption").textContent = render.title;
+  $("#renderTitle").textContent = render.title;
+  $("#renderCaption").textContent = render.description || "";
   resetRenderZoom();
-  $("#renderDialog").showModal();
+  const dialog = $("#renderDialog");
+  if (!dialog.open) dialog.showModal();
+  updateRenderControls();
+}
+
+function updateRenderControls() {
+  $("#prevRender").disabled = config.renders.length < 2;
+  $("#nextRender").disabled = config.renders.length < 2;
+}
+
+function navigateRender(offset) {
+  if (!$("#renderDialog")?.open || !config.renders.length) return;
+  const current = state.render.index < 0 ? 0 : state.render.index;
+  const next = (current + offset + config.renders.length) % config.renders.length;
+  openRender(next);
+}
+
+async function toggleRenderFullscreen() {
+  const fullscreenElement = getFullscreenElement();
+  if (fullscreenElement) {
+    const exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen;
+    if (exitFullscreen) await exitFullscreen.call(document);
+    return;
+  }
+  const target = $("#renderDialog");
+  const requestFullscreen = target.requestFullscreen || target.webkitRequestFullscreen;
+  if (!requestFullscreen) return;
+  try {
+    await requestFullscreen.call(target);
+  } catch {
+    setFullscreenButtonState();
+  }
 }
 
 function normalizeWheelDelta(event, target) {
@@ -429,7 +492,6 @@ function normalizeWheelDelta(event, target) {
 
 function handleRenderWheel(event) {
   if (state.view !== "renders" || event.ctrlKey || $("#renderDialog")?.open) return;
-  if (!event.target.closest("#view-renders")) return;
   const grid = $("#renderGrid");
   if (!grid || grid.scrollWidth <= grid.clientWidth) return;
   const delta = normalizeWheelDelta(event, grid);
@@ -450,6 +512,7 @@ function pointDistance(a, b) {
 function startRenderPointer(event) {
   if (event.type === "mousedown" && state.render.pointers.size) return;
   if (event.pointerType === "mouse" && event.button !== 0) return;
+  if (state.render.scale <= 1.01 && event.pointerType !== "touch") return;
   const stage = $("#renderStage");
   const key = inputId(event);
   if (state.render.pointers.has(key)) return;
@@ -516,8 +579,12 @@ function startRenderGalleryPan(event) {
   if (state.view !== "renders" || $("#renderDialog")?.open || event.button !== 0) return;
   const grid = $("#renderGrid");
   if (!grid || grid.scrollWidth <= grid.clientWidth) return;
+  const card = event.target.closest("[data-render]");
   state.gallery.isPanning = true;
   state.gallery.moved = false;
+  state.gallery.suppressClick = false;
+  state.gallery.pendingOpenIndex = card ? Number(card.dataset.render) : null;
+  state.gallery.clickOpened = false;
   state.gallery.pointerId = inputId(event);
   state.gallery.startX = event.clientX;
   state.gallery.startY = event.clientY;
@@ -543,13 +610,36 @@ function endRenderGalleryPan(event) {
   const grid = $("#renderGrid");
   if (event.pointerId != null && grid?.hasPointerCapture(event.pointerId)) grid.releasePointerCapture(event.pointerId);
   grid?.classList.remove("is-grabbing");
+  const shouldOpen = !state.gallery.moved && Number.isFinite(state.gallery.pendingOpenIndex);
+  const pendingOpenIndex = state.gallery.pendingOpenIndex;
   state.gallery.isPanning = false;
   state.gallery.pointerId = null;
   state.gallery.suppressClick = state.gallery.moved;
   state.gallery.moved = false;
+  if (shouldOpen) {
+    window.setTimeout(() => {
+      if (!state.gallery.clickOpened && !$("#renderDialog")?.open) openRender(pendingOpenIndex);
+      state.gallery.pendingOpenIndex = null;
+      state.gallery.clickOpened = false;
+    }, 80);
+  } else {
+    state.gallery.pendingOpenIndex = null;
+    state.gallery.clickOpened = false;
+  }
   window.setTimeout(() => {
     state.gallery.suppressClick = false;
-  }, 0);
+  }, 160);
+}
+
+function handleKeydown(event) {
+  if (!$("#renderDialog")?.open) return;
+  if (event.key === "ArrowLeft") {
+    event.preventDefault();
+    navigateRender(-1);
+  } else if (event.key === "ArrowRight") {
+    event.preventDefault();
+    navigateRender(1);
+  }
 }
 
 function bindEvents() {
@@ -570,6 +660,9 @@ function bindEvents() {
   viewport.addEventListener("mousedown", startPan);
   window.addEventListener("mousemove", movePan);
   window.addEventListener("mouseup", endPan);
+  document.addEventListener("pointerdown", disableCanvaInteractionOutside);
+  document.addEventListener("mousemove", disableCanvaInteractionOutside);
+  document.addEventListener("touchstart", disableCanvaInteractionOutside);
   viewport.addEventListener("wheel", (event) => {
     event.preventDefault();
     zoomAt(event.deltaY < 0 ? 1.14 : 1 / 1.14, event.clientX, event.clientY);
@@ -578,6 +671,7 @@ function bindEvents() {
   $("#view-renders").addEventListener("wheel", handleRenderWheel, { passive: false });
   $("#renderGrid").addEventListener("wheel", handleRenderWheel, { passive: false });
   document.addEventListener("wheel", handleRenderWheel, { passive: false });
+  window.addEventListener("wheel", handleRenderWheel, { passive: false, capture: true });
 
   $("#renderGrid").addEventListener("pointerdown", startRenderGalleryPan);
   $("#renderGrid").addEventListener("pointermove", moveRenderGalleryPan);
@@ -588,19 +682,27 @@ function bindEvents() {
   window.addEventListener("mouseup", endRenderGalleryPan);
 
   $("#renderGrid").addEventListener("click", (event) => {
+    const card = event.target.closest("[data-render]");
+    if (!card) return;
     if (state.gallery.suppressClick) {
       event.preventDefault();
       event.stopPropagation();
       state.gallery.suppressClick = false;
       return;
     }
-    const card = event.target.closest("[data-render]");
-    if (!card) return;
+    state.gallery.clickOpened = true;
+    state.gallery.pendingOpenIndex = null;
     openRender(Number(card.dataset.render));
   });
 
   $("#closeRender").addEventListener("click", () => $("#renderDialog").close());
-  $("#renderDialog").addEventListener("close", resetRenderZoom);
+  $("#prevRender").addEventListener("click", () => navigateRender(-1));
+  $("#nextRender").addEventListener("click", () => navigateRender(1));
+  $("#renderFullscreen").addEventListener("click", toggleRenderFullscreen);
+  $("#renderDialog").addEventListener("close", () => {
+    state.render.index = -1;
+    resetRenderZoom();
+  });
   $("#renderDialog").addEventListener("click", (event) => {
     if (event.target.id === "renderDialog") $("#renderDialog").close();
   });
@@ -620,6 +722,7 @@ function bindEvents() {
   renderStage.addEventListener("dblclick", resetRenderZoom);
 
   window.addEventListener("resize", recenterPresentation);
+  document.addEventListener("keydown", handleKeydown);
   document.addEventListener("fullscreenchange", setFullscreenButtonState);
   document.addEventListener("webkitfullscreenchange", setFullscreenButtonState);
 }
