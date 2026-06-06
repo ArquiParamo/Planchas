@@ -663,7 +663,10 @@ function endRenderGalleryPan(event) {
 
 function handleKeydown(event) {
   if (!$("#renderDialog")?.open) return;
-  if (event.key === "ArrowLeft") {
+  if (event.key === "Escape" || event.key === "Esc") {
+    event.preventDefault();
+    $("#renderDialog").close();
+  } else if (event.key === "ArrowLeft") {
     event.preventDefault();
     navigateRender(-1);
   } else if (event.key === "ArrowRight") {
