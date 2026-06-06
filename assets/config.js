@@ -1,12 +1,8 @@
 window.PLANCHAS_CONFIG = {
-  pdfReleaseBaseUrl: "https://github.com/ArquiParamo/Planchas/releases/download/original-pdfs",
   boards: [
     {
       id: "1",
       title: "Plancha 01",
-      fileName: "1.pdf",
-      pdfRoute: "/pdf/1",
-      pdfOriginalUrl: "https://github.com/ArquiParamo/Planchas/releases/download/original-pdfs/1.pdf",
       previewSrc: "./assets/boards/board-01-preview.webp",
       largeSrc: "./assets/boards/board-01-large.webp",
       detailSrc: "./assets/boards/board-01-detail.webp",
@@ -16,9 +12,6 @@ window.PLANCHAS_CONFIG = {
     {
       id: "2",
       title: "Plancha 02",
-      fileName: "2.pdf",
-      pdfRoute: "/pdf/2",
-      pdfOriginalUrl: "https://github.com/ArquiParamo/Planchas/releases/download/original-pdfs/2.pdf",
       previewSrc: "./assets/boards/board-02-preview.webp",
       largeSrc: "./assets/boards/board-02-large.webp",
       detailSrc: "./assets/boards/board-02-detail.webp",
@@ -28,9 +21,6 @@ window.PLANCHAS_CONFIG = {
     {
       id: "3",
       title: "Plancha 03",
-      fileName: "3.pdf",
-      pdfRoute: "/pdf/3",
-      pdfOriginalUrl: "https://github.com/ArquiParamo/Planchas/releases/download/original-pdfs/3.pdf",
       previewSrc: "./assets/boards/board-03-preview.webp",
       largeSrc: "./assets/boards/board-03-large.webp",
       detailSrc: "./assets/boards/board-03-detail.webp",
@@ -40,9 +30,6 @@ window.PLANCHAS_CONFIG = {
     {
       id: "4",
       title: "Plancha 04",
-      fileName: "4.pdf",
-      pdfRoute: "/pdf/4",
-      pdfOriginalUrl: "https://github.com/ArquiParamo/Planchas/releases/download/original-pdfs/4.pdf",
       previewSrc: "./assets/boards/board-04-preview.jpg",
       largeSrc: "./assets/boards/board-04-large.webp",
       detailSrc: "./assets/boards/board-04-detail.webp",

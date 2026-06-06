@@ -392,21 +392,6 @@ h3 {
   font-weight: 900;
 }
 
-.board-actions {
-  display: inline-flex;
-  flex: 0 0 auto;
-  gap: 6px;
-}
-
-.board-actions a {
-  display: inline-grid;
-  width: 30px;
-  height: 30px;
-  place-items: center;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-}
-
 .board-canvas-shell {
   position: relative;
   width: 100%;

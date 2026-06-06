@@ -31,16 +31,6 @@ const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
-function getBoardPdfUrl(board) {
-  return board.pdfOriginalUrl || board.route || `${config.pdfReleaseBaseUrl}/${board.fileName}`;
-}
-
-function getBoardDownloadUrl(board) {
-  const base = board.pdfRoute || board.route || board.pdfOriginalUrl || `${config.pdfReleaseBaseUrl}/${board.fileName}`;
-  const separator = base.includes("?") ? "&" : "?";
-  return `${base}${separator}download=1`;
-}
-
 function applyPan() {
   const content = $("#presentationContent");
   if (!content) return;
@@ -152,14 +142,6 @@ function renderBoardPanels() {
         <article class="board-panel" data-board-panel="${board.id}">
           <header>
             <span>${board.title}</span>
-            <span class="board-actions">
-              <a href="${getBoardPdfUrl(board)}" target="_blank" rel="noreferrer" title="Abrir PDF original" aria-label="Abrir PDF original de ${board.title}">
-                <i data-lucide="external-link" aria-hidden="true"></i>
-              </a>
-              <a href="${getBoardDownloadUrl(board)}" target="_blank" rel="noreferrer" title="Descargar PDF" aria-label="Descargar PDF de ${board.title}">
-                <i data-lucide="download" aria-hidden="true"></i>
-              </a>
-            </span>
           </header>
           <div class="board-canvas-shell" data-board-shell="${board.id}" style="--board-preview: url('${board.previewSrc || board.largeSrc || ""}')">
             <img
