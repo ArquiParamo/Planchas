@@ -93,13 +93,15 @@ function getFullscreenElement() {
 function setFullscreenButtonState() {
   const button = $("#fitBoard");
   if (!button) return;
-  const isFullscreen = Boolean(getFullscreenElement());
+  const canvaFrame = $(".canva-frame-shell iframe");
+  const fullscreenElement = getFullscreenElement();
+  const isFullscreen = fullscreenElement === canvaFrame || fullscreenElement === $("#canvaFrameShell");
   button.setAttribute("aria-pressed", String(isFullscreen));
-  button.title = isFullscreen ? "Salir de pantalla completa" : "Ampliar presentación";
+  button.title = isFullscreen ? "Salir de Canva pantalla completa" : "Canva pantalla completa";
   button.setAttribute("aria-label", button.title);
 }
 
-async function togglePresentationFullscreen() {
+async function toggleCanvaFullscreen() {
   const fullscreenElement = getFullscreenElement();
   if (fullscreenElement) {
     const exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen;
@@ -108,18 +110,16 @@ async function togglePresentationFullscreen() {
   }
 
   if (state.view !== "presentacion") setView("presentacion");
-  const target = $(".app-shell") || document.documentElement;
+  const target = $(".canva-frame-shell iframe") || $("#canvaFrameShell");
   const requestFullscreen = target.requestFullscreen || target.webkitRequestFullscreen;
   if (!requestFullscreen) {
-    zoomAt(1.35, window.innerWidth / 2, window.innerHeight / 2);
     return;
   }
 
   try {
     await requestFullscreen.call(target);
-    requestAnimationFrame(recenterPresentation);
   } catch {
-    zoomAt(1.35, window.innerWidth / 2, window.innerHeight / 2);
+    setFullscreenButtonState();
   }
 }
 
@@ -235,6 +235,7 @@ function renderCanva() {
     iframe.title = presentation.canvaTitle;
     iframe.loading = "lazy";
     iframe.allowFullscreen = true;
+    iframe.setAttribute("allowfullscreen", "allowfullscreen");
     iframe.allow = "fullscreen";
     shell.append(iframe);
     return;
@@ -428,7 +429,7 @@ function bindEvents() {
   });
 
   $("#resetView").addEventListener("click", recenterPresentation);
-  $("#fitBoard").addEventListener("click", togglePresentationFullscreen);
+  $("#fitBoard").addEventListener("click", toggleCanvaFullscreen);
   $("#zoomIn").addEventListener("click", () => zoomAt(1.24, window.innerWidth / 2, window.innerHeight / 2));
   $("#zoomOut").addEventListener("click", () => zoomAt(1 / 1.24, window.innerWidth / 2, window.innerHeight / 2));
 
