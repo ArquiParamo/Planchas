@@ -355,12 +355,11 @@ h3 {
   position: absolute;
   left: 0;
   top: 0;
-  width: 3500px;
+  width: 2200px;
   display: grid;
   gap: 22px;
   padding: 28px;
   transform-origin: 0 0;
-  will-change: transform;
 }
 
 .boards-strip {
@@ -410,13 +409,18 @@ h3 {
 }
 
 .board-canvas-shell {
+  position: relative;
   width: 100%;
   aspect-ratio: 0.7;
   min-height: 760px;
   display: grid;
   place-items: center;
   padding: 8px;
-  background: #f9fbf8;
+  background-color: #f9fbf8;
+  background-image: var(--board-preview);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
 }
 
 .board-image {
@@ -424,6 +428,12 @@ h3 {
   width: 100%;
   height: auto;
   background: #fff;
+  opacity: 0;
+}
+
+.board-canvas-shell.is-large .board-image,
+.board-canvas-shell.is-detail .board-image {
+  opacity: 1;
 }
 
 .pdf-loader {

@@ -43,7 +43,7 @@ window.PLANCHAS_CONFIG = {
       fileName: "4.pdf",
       pdfRoute: "/pdf/4",
       pdfOriginalUrl: "https://github.com/ArquiParamo/Planchas/releases/download/original-pdfs/4.pdf",
-      previewSrc: "./assets/boards/board-04-preview.webp",
+      previewSrc: "./assets/boards/board-04-preview.jpg",
       largeSrc: "./assets/boards/board-04-large.webp",
       detailSrc: "./assets/boards/board-04-detail.webp",
       sizeBytes: 145130720,

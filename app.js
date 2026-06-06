@@ -1,4 +1,6 @@
 const config = window.PLANCHAS_CONFIG;
+const LARGE_IMAGE_SCALE = 0.36;
+const DETAIL_IMAGE_SCALE = 0.58;
 
 const state = {
   view: "presentacion",
@@ -99,7 +101,11 @@ function zoomAt(delta, originX, originY) {
   state.x = x - contentX * nextScale;
   state.y = y - contentY * nextScale;
   applyPan();
-  if (state.scale > 0.58) upgradeBoardImages(true);
+  if (state.scale > DETAIL_IMAGE_SCALE) {
+    upgradeBoardImages(true);
+  } else if (state.scale > LARGE_IMAGE_SCALE) {
+    upgradeBoardImages(false);
+  }
 }
 
 function renderBoardPanels() {
@@ -118,14 +124,14 @@ function renderBoardPanels() {
               </a>
             </span>
           </header>
-          <div class="board-canvas-shell" data-board-shell="${board.id}">
+          <div class="board-canvas-shell" data-board-shell="${board.id}" style="--board-preview: url('${board.previewSrc || board.largeSrc || ""}')">
             <img
               class="board-image"
               data-board-image="${board.id}"
               data-large-src="${board.largeSrc || ""}"
               data-detail-src="${board.detailSrc || ""}"
-              data-quality="${board.largeSrc ? "large" : "preview"}"
-              src="${board.largeSrc || board.previewSrc || ""}"
+              data-quality="${board.previewSrc ? "preview" : board.largeSrc ? "large" : ""}"
+              src="${board.previewSrc || board.largeSrc || ""}"
               alt="${board.title}"
               loading="eager"
               decoding="async"
@@ -169,7 +175,9 @@ function upgradeBoardImages(useDetail = false) {
 }
 
 function scheduleLargeBoardUpgrade() {
-  const run = () => upgradeBoardImages(false);
+  const run = () => {
+    if (state.scale > LARGE_IMAGE_SCALE) upgradeBoardImages(false);
+  };
   if ("requestIdleCallback" in window) {
     window.requestIdleCallback(run, { timeout: 2500 });
   } else {
@@ -236,7 +244,11 @@ function setView(viewName) {
 function startPan(event) {
   if (event.button !== 0 || event.target.closest("a, button")) return;
   const viewport = $("#presentationViewport");
-  upgradeBoardImages(true);
+  if (state.scale > DETAIL_IMAGE_SCALE) {
+    upgradeBoardImages(true);
+  } else if (state.scale > LARGE_IMAGE_SCALE) {
+    upgradeBoardImages(false);
+  }
   state.isPanning = true;
   state.panStartX = event.clientX;
   state.panStartY = event.clientY;
