@@ -5,165 +5,99 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Visor de planchas finales, presentacion y renders del proyecto Arquitectura de Paramo."
+      content="Visor navegable de planchas, presentacion de Canva y renders del proyecto Arquitectura de Paramo."
     />
     <title>Planchas | Arquitectura de Paramo</title>
-    <link rel="stylesheet" href="./styles.css?v=20260605-152600" />
-    <script src="./assets/config.js?v=20260605-152600"></script>
+    <link rel="stylesheet" href="./styles.css?v=20260606-070042" />
+    <script src="./assets/config.js?v=20260606-070042"></script>
     <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
-    <script src="./app.js?v=20260605-152600" defer></script>
+    <script src="./app.js?v=20260606-070042" defer></script>
   </head>
   <body>
     <div class="app-shell">
       <header class="topbar">
-        <a class="brand" href="#planchas" aria-label="Ir a planchas">
+        <a class="brand" href="#presentacion" aria-label="Ir a presentacion">
           <img src="./assets/brand/javeriana-logo.png" alt="" />
           <span>
-            <strong>Planchas</strong>
-            <small>Arquitectura de Paramo</small>
+            <strong>Presentación</strong>
+            <small>Arquitectura de Páramo</small>
           </span>
         </a>
-        <div class="toolbar" aria-label="Controles rápidos">
-          <button class="icon-button" id="resetView" type="button" title="Recentrar planchas" aria-label="Recentrar planchas">
+        <div class="toolbar action-toolbar" aria-label="Controles rápidos">
+          <button class="action-button" id="resetView" type="button" title="Recentrar presentación" aria-label="Recentrar presentación">
             <i data-lucide="crosshair" aria-hidden="true"></i>
+            <span>Recentrar</span>
           </button>
-          <a class="icon-button" id="openSchema" href="https://esq-gestion.arqiparamo.workers.dev/" target="_blank" rel="noreferrer" title="Abrir esquema de gestión" aria-label="Abrir esquema de gestión">
-            <i data-lucide="users" aria-hidden="true"></i>
-          </a>
-          <a class="icon-button" id="openMap" href="https://mapa-biodiverso-chingaza.arqiparamo.workers.dev/" target="_blank" rel="noreferrer" title="Abrir mapa biodiverso" aria-label="Abrir mapa biodiverso">
+          <a class="action-button" id="openMap" href="https://mapa-biodiverso-chingaza.arqiparamo.workers.dev/" target="_blank" rel="noreferrer" title="Abrir mapa biodiverso" aria-label="Abrir mapa biodiverso">
             <i data-lucide="map" aria-hidden="true"></i>
+            <span>Mapa</span>
+          </a>
+          <a class="action-button" id="openSchema" href="https://esq-gestion.arqiparamo.workers.dev/" target="_blank" rel="noreferrer" title="Abrir esquema de gestión" aria-label="Abrir esquema de gestión">
+            <i data-lucide="users" aria-hidden="true"></i>
+            <span>Esc. gestión</span>
           </a>
         </div>
-        <span class="source-pill" id="sourcePill">PDF original</span>
+        <span class="source-pill" id="sourcePill">Presentación</span>
       </header>
 
-      <main>
-        <section class="view is-active board-view" id="view-planchas" aria-labelledby="boardHeading">
-          <aside class="control-panel">
-            <p class="eyebrow">Entrega final</p>
-            <h1 id="boardHeading">Planchas originales</h1>
-            <p class="intro">
-              Las cuatro planchas se ven juntas desde los PDFs originales alojados en GitHub.
-            </p>
-            <div class="board-list" id="boardList" aria-label="Seleccion de planchas"></div>
-            <dl class="board-meta" id="boardMeta"></dl>
-          </aside>
+      <main class="workspace">
+        <aside class="side-menu" aria-label="Apartados">
+          <button class="nav-button is-active" type="button" data-view="presentacion">
+            <i data-lucide="presentation" aria-hidden="true"></i>
+            <span>Presentación</span>
+          </button>
+          <button class="nav-button" type="button" data-view="renders">
+            <i data-lucide="images" aria-hidden="true"></i>
+            <span>Renders</span>
+          </button>
+        </aside>
 
-          <section class="pdf-panel" aria-label="Visor de plancha">
-            <div class="panel-toolbar">
-              <div>
-                <p class="toolbar-kicker">Documento activo</p>
-                <h2 id="currentBoardTitle">Plancha 01</h2>
-              </div>
-              <div class="toolbar-actions">
-                <button class="tool-button icon-tool" id="zoomOut" type="button" title="Alejar" aria-label="Alejar">
-                  <i data-lucide="zoom-out" aria-hidden="true"></i>
-                </button>
-                <button class="tool-button icon-tool" id="fitBoard" type="button" title="Recentrar planchas" aria-label="Recentrar planchas">
-                  <i data-lucide="crosshair" aria-hidden="true"></i>
-                </button>
-                <button class="tool-button icon-tool" id="zoomIn" type="button" title="Acercar" aria-label="Acercar">
-                  <i data-lucide="zoom-in" aria-hidden="true"></i>
-                </button>
-                <a class="tool-button icon-tool" id="openBoard" target="_blank" rel="noreferrer" title="Abrir PDF original" aria-label="Abrir PDF original">
-                  <i data-lucide="external-link" aria-hidden="true"></i>
-                </a>
-                <a class="tool-button icon-tool" id="downloadBoard" title="Descargar PDF original" aria-label="Descargar PDF original">
-                  <i data-lucide="download" aria-hidden="true"></i>
-                </a>
-                <button class="tool-button icon-tool" id="fullscreenBoard" type="button" title="Expandir visor" aria-label="Expandir visor">
-                  <i data-lucide="maximize" aria-hidden="true"></i>
-                </button>
-              </div>
+        <section class="view is-active presentation-view" id="view-presentacion" aria-labelledby="presentationHeading">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Entrega final</p>
+              <h1 id="presentationHeading">Planchas y Canva</h1>
             </div>
-            <div class="pdf-frame-wrap boards-frame-wrap" id="boardsViewport">
-              <div class="boards-strip" id="boardsStrip" aria-label="Cuatro planchas renderizadas desde PDF original"></div>
+            <div class="toolbar-actions" aria-label="Herramientas de navegación">
+              <button class="tool-button icon-tool" id="zoomOut" type="button" title="Alejar" aria-label="Alejar">
+                <i data-lucide="zoom-out" aria-hidden="true"></i>
+              </button>
+              <button class="tool-button icon-tool" id="fitBoard" type="button" title="Recentrar" aria-label="Recentrar">
+                <i data-lucide="crosshair" aria-hidden="true"></i>
+              </button>
+              <button class="tool-button icon-tool" id="zoomIn" type="button" title="Acercar" aria-label="Acercar">
+                <i data-lucide="zoom-in" aria-hidden="true"></i>
+              </button>
             </div>
-            <div class="inline-presentation" aria-labelledby="inlinePresentationHeading">
-              <div class="panel-toolbar inline-presentation-heading">
-                <div>
-                  <p class="toolbar-kicker">Presentación</p>
-                  <h2 id="inlinePresentationHeading">Presentación del proyecto</h2>
-                </div>
-                <a class="tool-button" id="inlineCanvaExternal" target="_blank" rel="noreferrer">Abrir Canva</a>
-              </div>
-              <div class="inline-slide-viewer">
-                <div class="slide-toolbar">
-                  <button class="tool-button icon-tool" id="inlinePrevSlide" type="button" title="Diapositiva anterior" aria-label="Diapositiva anterior">
-                    <i data-lucide="chevron-left" aria-hidden="true"></i>
-                  </button>
-                  <span id="inlineSlideStatus">Diapositiva</span>
-                  <button class="tool-button icon-tool" id="inlineNextSlide" type="button" title="Diapositiva siguiente" aria-label="Diapositiva siguiente">
-                    <i data-lucide="chevron-right" aria-hidden="true"></i>
-                  </button>
-                </div>
-                <div class="slide-canvas-shell inline-slide-canvas-shell" id="inlinePresentationCanvasShell">
-                  <p class="pdf-loader" id="inlinePresentationLoader">Cargando presentacion</p>
-                  <canvas id="inlinePresentationCanvas" aria-label="Diapositiva renderizada desde PDF"></canvas>
-                </div>
-              </div>
-            </div>
-          </section>
-        </section>
-
-        <section class="view split-view" id="view-presentacion" aria-labelledby="presentationHeading">
-          <div class="section-copy">
-            <p class="eyebrow">Presentacion</p>
-            <h1 id="presentationHeading">Canva y respaldo local</h1>
-            <p class="intro">
-              La presentacion principal esta en Canva. El PDF local de la V3 queda disponible como
-              respaldo de lectura.
-            </p>
-            <div class="segmented" aria-label="Modo de presentacion">
-              <button class="segment" type="button" data-presentation-mode="canva">Canva</button>
-              <button class="segment is-active" type="button" data-presentation-mode="pdf">PDF V3</button>
-            </div>
-            <a class="primary-link" id="canvaExternal" target="_blank" rel="noreferrer">Abrir Canva</a>
           </div>
-          <div class="presentation-stage">
-            <div class="presentation-frame canva-link-frame" id="canvaFrame">
-              <div>
-                <p class="eyebrow">Canva</p>
-                <h2>Presentacion principal en Canva</h2>
-                <p class="intro">
-                  La version completa ya esta creada en Canva. El visor PDF permanece embebido aqui
-                  como respaldo mientras Canva habilita la vista incrustada.
-                </p>
-                <a class="primary-link" id="canvaFrameLink" target="_blank" rel="noreferrer">Abrir Canva</a>
-              </div>
-            </div>
-            <div class="presentation-frame pdf-presentation-frame is-active" id="presentationPdf">
-              <div class="slide-toolbar">
-                <button class="tool-button icon-tool" id="prevSlide" type="button" title="Diapositiva anterior" aria-label="Diapositiva anterior">
-                  <i data-lucide="chevron-left" aria-hidden="true"></i>
-                </button>
-                <span id="slideStatus">Diapositiva</span>
-                <button class="tool-button icon-tool" id="nextSlide" type="button" title="Diapositiva siguiente" aria-label="Diapositiva siguiente">
-                  <i data-lucide="chevron-right" aria-hidden="true"></i>
-                </button>
-              </div>
-              <div class="slide-canvas-shell" id="presentationCanvasShell">
-                <p class="pdf-loader" id="presentationLoader">Cargando presentacion</p>
-                <canvas id="presentationCanvas" aria-label="Diapositiva renderizada desde PDF"></canvas>
-              </div>
+
+          <div class="pan-viewport" id="presentationViewport" aria-label="Espacio navegable de presentación">
+            <div class="pan-content" id="presentationContent">
+              <section class="boards-strip" id="boardsStrip" aria-label="Cuatro planchas renderizadas desde PDF original"></section>
+              <section class="canva-stage" id="canvaStage" aria-labelledby="canvaHeading">
+                <div class="canva-heading">
+                  <div>
+                    <p class="toolbar-kicker">Canva</p>
+                    <h2 id="canvaHeading">Presentación del proyecto</h2>
+                  </div>
+                  <a class="tool-button" id="canvaExternal" target="_blank" rel="noreferrer">Abrir Canva</a>
+                </div>
+                <div class="canva-frame-shell" id="canvaFrameShell">
+                  <p class="pdf-loader" id="canvaLoader">Verificando visor público de Canva</p>
+                </div>
+              </section>
             </div>
           </div>
         </section>
 
         <section class="view renders-view" id="view-renders" aria-labelledby="rendersHeading">
-          <div class="section-copy compact">
-            <p class="eyebrow">Visualizaciones</p>
-            <h1 id="rendersHeading">Renders del proyecto</h1>
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Visualizaciones</p>
+              <h1 id="rendersHeading">Renders</h1>
+            </div>
           </div>
-          <div class="render-grid" id="renderGrid"></div>
-        </section>
-
-        <section class="view access-view" id="view-accesos" aria-labelledby="accessHeading">
-          <div class="section-copy">
-            <p class="eyebrow">Proyecto conectado</p>
-            <h1 id="accessHeading">Accesos externos</h1>
-          </div>
-          <div class="access-grid" id="accessGrid"></div>
+          <div class="render-strip" id="renderGrid" aria-label="Galería de renders"></div>
         </section>
       </main>
     </div>

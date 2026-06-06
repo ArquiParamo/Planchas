@@ -1,14 +1,16 @@
 const fs = require("node:fs");
+const https = require("node:https");
 const http = require("node:http");
 const path = require("node:path");
 
 const root = __dirname;
 const port = Number(process.env.PORT || 4173);
+const releaseBase = "https://github.com/ArquiParamo/Planchas/releases/download/original-pdfs";
 const pdfs = {
-  "1": "E:\\0 - Proyecto de Grado\\DOCUMENTO\\PLANCHAS\\7\\1.pdf",
-  "2": "E:\\0 - Proyecto de Grado\\DOCUMENTO\\PLANCHAS\\7\\2.pdf",
-  "3": "E:\\0 - Proyecto de Grado\\DOCUMENTO\\PLANCHAS\\7\\3.pdf",
-  "4": "E:\\0 - Proyecto de Grado\\DOCUMENTO\\PLANCHAS\\7\\4.pdf"
+  "1": "1.pdf",
+  "2": "2.pdf",
+  "3": "3.pdf",
+  "4": "4.pdf"
 };
 
 const mime = new Map([
@@ -41,59 +43,46 @@ function serveStatic(requestUrl, response) {
   });
 }
 
-function servePdf(request, response, id) {
-  const filePath = pdfs[id];
-  if (!filePath) return send404(response);
-  fs.stat(filePath, (error, stat) => {
-    if (error || !stat.isFile()) return send404(response);
-
-    const headers = {
-      "accept-ranges": "bytes",
+function pipePdfFromUrl(request, response, upstreamUrl, redirectsLeft = 4) {
+  const headers = { "accept-encoding": "identity" };
+  if (request.headers.range) headers.Range = request.headers.range;
+  const upstreamRequest = https.request(upstreamUrl, { method: request.method, headers }, (upstream) => {
+    const location = upstream.headers.location;
+    if (
+      location &&
+      upstream.statusCode >= 300 &&
+      upstream.statusCode < 400 &&
+      redirectsLeft > 0
+    ) {
+      upstream.resume();
+      pipePdfFromUrl(request, response, new URL(location, upstreamUrl).toString(), redirectsLeft - 1);
+      return;
+    }
+    const nextHeaders = {
+      ...upstream.headers,
       "content-type": "application/pdf",
-      "content-disposition": `inline; filename="plancha-${id}.pdf"`
+      "content-disposition": "inline"
     };
+    response.writeHead(upstream.statusCode || 502, nextHeaders);
     if (request.method === "HEAD") {
-      response.writeHead(200, { ...headers, "content-length": stat.size });
       response.end();
+      upstream.resume();
       return;
     }
-
-    const range = request.headers.range;
-    if (range) {
-      const match = /^bytes=(\d*)-(\d*)$/.exec(range);
-      if (!match) {
-        response.writeHead(416, { "content-range": `bytes */${stat.size}` });
-        response.end();
-        return;
-      }
-      let start;
-      let end;
-      if (match[1] === "") {
-        const suffixLength = Number(match[2]);
-        start = Math.max(stat.size - suffixLength, 0);
-        end = stat.size - 1;
-      } else {
-        start = Number(match[1]);
-        end = match[2] ? Number(match[2]) : stat.size - 1;
-      }
-      if (Number.isNaN(start) || Number.isNaN(end) || start > end || start >= stat.size) {
-        response.writeHead(416, { "content-range": `bytes */${stat.size}` });
-        response.end();
-        return;
-      }
-      end = Math.min(end, stat.size - 1);
-      response.writeHead(206, {
-        ...headers,
-        "content-range": `bytes ${start}-${end}/${stat.size}`,
-        "content-length": end - start + 1
-      });
-      fs.createReadStream(filePath, { start, end }).pipe(response);
-      return;
-    }
-
-    response.writeHead(200, { ...headers, "content-length": stat.size });
-    fs.createReadStream(filePath).pipe(response);
+    upstream.pipe(response);
   });
+  upstreamRequest.on("error", () => {
+    response.writeHead(502, { "content-type": "text/plain; charset=utf-8" });
+    response.end("No se pudo cargar el PDF remoto.");
+  });
+  upstreamRequest.end();
+}
+
+function servePdf(request, response, id) {
+  const fileName = pdfs[id];
+  if (!fileName) return send404(response);
+  const upstreamUrl = `${releaseBase}/${fileName}`;
+  pipePdfFromUrl(request, response, upstreamUrl);
 }
 
 const server = http.createServer((request, response) => {
