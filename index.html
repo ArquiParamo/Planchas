@@ -12,45 +12,63 @@
     <link rel="preload" as="image" href="./assets/boards/board-02-preview.webp" />
     <link rel="preload" as="image" href="./assets/boards/board-03-preview.webp" />
     <link rel="preload" as="image" href="./assets/boards/board-04-preview.webp" />
-    <link rel="stylesheet" href="./styles.css?v=20260606-090500" />
-    <script src="./assets/config.js?v=20260606-090500"></script>
+    <link rel="preload" as="image" href="./assets/boards/board-01-large.webp" />
+    <link rel="preload" as="image" href="./assets/boards/board-02-large.webp" />
+    <link rel="preload" as="image" href="./assets/boards/board-03-large.webp" />
+    <link rel="preload" as="image" href="./assets/boards/board-04-large.webp" />
+    <link rel="stylesheet" href="./styles.css?v=20260606-113000" />
+    <script src="./assets/config.js?v=20260606-113000"></script>
     <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
-    <script src="./app.js?v=20260606-090500" defer></script>
+    <script src="./app.js?v=20260606-113000" defer></script>
   </head>
   <body>
     <div class="app-shell">
-      <aside class="side-panel" aria-label="Navegación de presentación">
-        <a class="brand" href="#presentacion" aria-label="Ir a presentación">
-          <img src="./assets/brand/javeriana-logo.png" alt="" />
-          <span>
-            <strong>Presentación</strong>
-            <small>Arquitectura de Páramo</small>
-          </span>
-        </a>
+      <aside class="sidebar" aria-label="Controles de presentación">
+        <header class="panel-header">
+          <div class="panel-title-row">
+            <div class="panel-title-copy">
+              <p class="eyebrow">Entrega final</p>
+              <h1>Planchas y renders</h1>
+              <p class="intro-text">Arquitectura de Páramo</p>
+            </div>
+            <div class="toolbar action-toolbar" aria-label="Controles rápidos">
+              <div class="primary-actions">
+                <button class="action-button" id="resetView" type="button" title="Recentrar presentación" aria-label="Recentrar presentación">
+                  <i data-lucide="crosshair" aria-hidden="true"></i>
+                  <span>Recentrar</span>
+                </button>
+                <a class="action-button" id="openMap" href="https://mapa-biodiverso-chingaza.arqiparamo.workers.dev/" target="_blank" rel="noreferrer" title="Abrir mapa biodiverso" aria-label="Abrir mapa biodiverso">
+                  <i data-lucide="map" aria-hidden="true"></i>
+                  <span>Mapa</span>
+                </a>
+                <a class="action-button" id="openSchema" href="https://esq-gestion.arqiparamo.workers.dev/" target="_blank" rel="noreferrer" title="Abrir esquema de gestión" aria-label="Abrir esquema de gestión">
+                  <i data-lucide="users" aria-hidden="true"></i>
+                  <span>Esc. gestión</span>
+                </a>
+              </div>
+              <div class="internal-actions" aria-label="Herramientas de vista">
+                <button class="internal-tool" id="zoomOut" type="button" title="Alejar" aria-label="Alejar">
+                  <i data-lucide="zoom-out" aria-hidden="true"></i>
+                </button>
+                <button class="internal-tool" id="fitBoard" type="button" title="Recentrar vista" aria-label="Recentrar vista">
+                  <i data-lucide="scan" aria-hidden="true"></i>
+                </button>
+                <button class="internal-tool" id="zoomIn" type="button" title="Acercar" aria-label="Acercar">
+                  <i data-lucide="zoom-in" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
 
-        <div class="side-actions" aria-label="Controles principales">
-          <button class="action-button" id="resetView" type="button" title="Recentrar presentación" aria-label="Recentrar presentación">
-            <i data-lucide="crosshair" aria-hidden="true"></i>
-            <span>Recentrar</span>
-          </button>
-          <a class="action-button" id="openMap" href="https://mapa-biodiverso-chingaza.arqiparamo.workers.dev/" target="_blank" rel="noreferrer" title="Abrir mapa biodiverso" aria-label="Abrir mapa biodiverso">
-            <i data-lucide="map" aria-hidden="true"></i>
-            <span>Mapa</span>
-          </a>
-          <a class="action-button" id="openSchema" href="https://esq-gestion.arqiparamo.workers.dev/" target="_blank" rel="noreferrer" title="Abrir esquema de gestión" aria-label="Abrir esquema de gestión">
-            <i data-lucide="users" aria-hidden="true"></i>
-            <span>Esc. gestión</span>
-          </a>
-        </div>
+        <div class="view-status" id="sourcePill">Presentación</div>
 
-        <span class="source-pill" id="sourcePill">Presentación</span>
-
-        <nav class="side-menu" aria-label="Apartados">
-          <button class="nav-button is-active" type="button" data-view="presentacion">
+        <nav class="view-switcher" aria-label="Apartados">
+          <button class="view-switch is-active" type="button" data-view="presentacion">
             <i data-lucide="presentation" aria-hidden="true"></i>
             <span>Presentación</span>
           </button>
-          <button class="nav-button" type="button" data-view="renders">
+          <button class="view-switch" type="button" data-view="renders">
             <i data-lucide="images" aria-hidden="true"></i>
             <span>Renders</span>
           </button>
@@ -59,24 +77,7 @@
 
       <main class="workspace">
         <section class="view is-active presentation-view" id="view-presentacion" aria-labelledby="presentationHeading">
-          <div class="section-head">
-            <div>
-              <p class="eyebrow">Entrega final</p>
-              <h1 id="presentationHeading">Planchas y Canva</h1>
-            </div>
-            <div class="toolbar-actions" aria-label="Herramientas de navegación">
-              <button class="tool-button icon-tool" id="zoomOut" type="button" title="Alejar" aria-label="Alejar">
-                <i data-lucide="zoom-out" aria-hidden="true"></i>
-              </button>
-              <button class="tool-button icon-tool" id="fitBoard" type="button" title="Recentrar" aria-label="Recentrar">
-                <i data-lucide="crosshair" aria-hidden="true"></i>
-              </button>
-              <button class="tool-button icon-tool" id="zoomIn" type="button" title="Acercar" aria-label="Acercar">
-                <i data-lucide="zoom-in" aria-hidden="true"></i>
-              </button>
-            </div>
-          </div>
-
+          <h2 class="sr-only" id="presentationHeading">Planchas y Canva</h2>
           <div class="pan-viewport" id="presentationViewport" aria-label="Espacio navegable de presentación">
             <div class="pan-content" id="presentationContent">
               <section class="boards-strip" id="boardsStrip" aria-label="Cuatro planchas"></section>
@@ -97,12 +98,7 @@
         </section>
 
         <section class="view renders-view" id="view-renders" aria-labelledby="rendersHeading">
-          <div class="section-head">
-            <div>
-              <p class="eyebrow">Visualizaciones</p>
-              <h1 id="rendersHeading">Renders</h1>
-            </div>
-          </div>
+          <h2 class="sr-only" id="rendersHeading">Renders</h2>
           <div class="render-strip" id="renderGrid" aria-label="Galería de renders"></div>
         </section>
       </main>

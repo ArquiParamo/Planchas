@@ -44,7 +44,7 @@ function serveStatic(requestUrl, response) {
   });
 }
 
-function pipePdfFromUrl(request, response, upstreamUrl, redirectsLeft = 4) {
+function pipePdfFromUrl(request, response, upstreamUrl, download = false, redirectsLeft = 4) {
   const headers = { "accept-encoding": "identity" };
   if (request.headers.range) headers.Range = request.headers.range;
   const upstreamRequest = https.request(upstreamUrl, { method: request.method, headers }, (upstream) => {
@@ -56,13 +56,13 @@ function pipePdfFromUrl(request, response, upstreamUrl, redirectsLeft = 4) {
       redirectsLeft > 0
     ) {
       upstream.resume();
-      pipePdfFromUrl(request, response, new URL(location, upstreamUrl).toString(), redirectsLeft - 1);
+      pipePdfFromUrl(request, response, new URL(location, upstreamUrl).toString(), download, redirectsLeft - 1);
       return;
     }
     const nextHeaders = {
       ...upstream.headers,
       "content-type": "application/pdf",
-      "content-disposition": "inline"
+      "content-disposition": download ? "attachment" : "inline"
     };
     response.writeHead(upstream.statusCode || 502, nextHeaders);
     if (request.method === "HEAD") {
@@ -79,18 +79,18 @@ function pipePdfFromUrl(request, response, upstreamUrl, redirectsLeft = 4) {
   upstreamRequest.end();
 }
 
-function servePdf(request, response, id) {
+function servePdf(request, response, id, download = false) {
   const fileName = pdfs[id];
   if (!fileName) return send404(response);
   const upstreamUrl = `${releaseBase}/${fileName}`;
-  pipePdfFromUrl(request, response, upstreamUrl);
+  pipePdfFromUrl(request, response, upstreamUrl, download);
 }
 
 const server = http.createServer((request, response) => {
   const url = new URL(request.url, `http://localhost:${port}`);
   const pdfMatch = /^\/pdf\/([1-4])$/.exec(url.pathname);
   if (pdfMatch) {
-    servePdf(request, response, pdfMatch[1]);
+    servePdf(request, response, pdfMatch[1], url.searchParams.get("download") === "1");
     return;
   }
   serveStatic(request.url, response);

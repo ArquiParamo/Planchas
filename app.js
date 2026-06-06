@@ -29,10 +29,14 @@ const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
-function getBoardPdfUrl(board, download = false) {
-  const base = board.pdfRoute || board.route || `${config.pdfReleaseBaseUrl}/${board.fileName}`;
+function getBoardPdfUrl(board) {
+  return board.pdfOriginalUrl || board.route || `${config.pdfReleaseBaseUrl}/${board.fileName}`;
+}
+
+function getBoardDownloadUrl(board) {
+  const base = board.pdfRoute || board.route || board.pdfOriginalUrl || `${config.pdfReleaseBaseUrl}/${board.fileName}`;
   const separator = base.includes("?") ? "&" : "?";
-  return download ? `${base}${separator}download=1` : base;
+  return `${base}${separator}download=1`;
 }
 
 function applyPan() {
@@ -45,11 +49,24 @@ function contentBounds() {
   const viewport = $("#presentationViewport");
   const content = $("#presentationContent");
   if (!viewport || !content) return null;
+  const viewportRect = viewport.getBoundingClientRect();
+  const sidebarRect = $(".sidebar")?.getBoundingClientRect();
+  const insets = { left: 0, right: 0, top: 0, bottom: 0 };
+  if (sidebarRect) {
+    const overlapsX = sidebarRect.right > viewportRect.left && sidebarRect.left < viewportRect.right;
+    const overlapsY = sidebarRect.bottom > viewportRect.top && sidebarRect.top < viewportRect.bottom;
+    if (overlapsX && overlapsY && window.innerWidth > 900) {
+      insets.left = Math.max(0, sidebarRect.right - viewportRect.left + 16);
+    } else if (overlapsX && overlapsY) {
+      insets.bottom = Math.max(0, viewportRect.bottom - sidebarRect.top + 16);
+    }
+  }
   return {
     viewportWidth: viewport.clientWidth,
     viewportHeight: viewport.clientHeight,
     contentWidth: content.scrollWidth,
-    contentHeight: content.scrollHeight
+    contentHeight: content.scrollHeight,
+    insets
   };
 }
 
@@ -57,11 +74,13 @@ function recenterPresentation() {
   const bounds = contentBounds();
   if (!bounds || !bounds.contentWidth || !bounds.contentHeight) return;
   const padding = 28;
-  const scaleX = (bounds.viewportWidth - padding * 2) / bounds.contentWidth;
-  const scaleY = (bounds.viewportHeight - padding * 2) / bounds.contentHeight;
+  const availableWidth = Math.max(1, bounds.viewportWidth - bounds.insets.left - bounds.insets.right);
+  const availableHeight = Math.max(1, bounds.viewportHeight - bounds.insets.top - bounds.insets.bottom);
+  const scaleX = (availableWidth - padding * 2) / bounds.contentWidth;
+  const scaleY = (availableHeight - padding * 2) / bounds.contentHeight;
   state.scale = clamp(Math.min(scaleX, scaleY), 0.14, 1);
-  state.x = Math.round((bounds.viewportWidth - bounds.contentWidth * state.scale) / 2);
-  state.y = Math.round((bounds.viewportHeight - bounds.contentHeight * state.scale) / 2);
+  state.x = Math.round(bounds.insets.left + (availableWidth - bounds.contentWidth * state.scale) / 2);
+  state.y = Math.round(bounds.insets.top + (availableHeight - bounds.contentHeight * state.scale) / 2);
   applyPan();
 }
 
@@ -70,7 +89,7 @@ function zoomAt(delta, originX, originY) {
   if (!viewport) return;
   const rect = viewport.getBoundingClientRect();
   const beforeScale = state.scale;
-  const nextScale = clamp(state.scale * delta, 0.14, 4.5);
+  const nextScale = clamp(state.scale * delta, 0.14, 6.5);
   if (nextScale === beforeScale) return;
   const x = originX - rect.left;
   const y = originY - rect.top;
@@ -80,7 +99,7 @@ function zoomAt(delta, originX, originY) {
   state.x = x - contentX * nextScale;
   state.y = y - contentY * nextScale;
   applyPan();
-  if (state.scale > 0.48) upgradeBoardImages(true);
+  if (state.scale > 0.58) upgradeBoardImages(true);
 }
 
 function renderBoardPanels() {
@@ -90,19 +109,25 @@ function renderBoardPanels() {
         <article class="board-panel" data-board-panel="${board.id}">
           <header>
             <span>${board.title}</span>
-            <a href="${getBoardPdfUrl(board)}" target="_blank" rel="noreferrer" aria-label="Abrir PDF original de ${board.title}">
-              <i data-lucide="external-link" aria-hidden="true"></i>
-            </a>
+            <span class="board-actions">
+              <a href="${getBoardPdfUrl(board)}" target="_blank" rel="noreferrer" title="Abrir PDF original" aria-label="Abrir PDF original de ${board.title}">
+                <i data-lucide="external-link" aria-hidden="true"></i>
+              </a>
+              <a href="${getBoardDownloadUrl(board)}" target="_blank" rel="noreferrer" title="Descargar PDF" aria-label="Descargar PDF de ${board.title}">
+                <i data-lucide="download" aria-hidden="true"></i>
+              </a>
+            </span>
           </header>
           <div class="board-canvas-shell" data-board-shell="${board.id}">
             <img
               class="board-image"
               data-board-image="${board.id}"
               data-large-src="${board.largeSrc || ""}"
-              data-quality="preview"
-              src="${board.previewSrc || board.largeSrc || ""}"
+              data-detail-src="${board.detailSrc || ""}"
+              data-quality="${board.largeSrc ? "large" : "preview"}"
+              src="${board.largeSrc || board.previewSrc || ""}"
               alt="${board.title}"
-              loading="${index === 0 ? "eager" : "eager"}"
+              loading="eager"
               decoding="async"
               fetchpriority="${index < 4 ? "high" : "auto"}"
             />
@@ -122,24 +147,24 @@ function renderBoardPanels() {
   });
 }
 
-function upgradeBoardImages(force = false) {
+function upgradeBoardImages(useDetail = false) {
   $$(".board-image").forEach((image) => {
-    const largeSrc = image.dataset.largeSrc;
-    if (!largeSrc || image.dataset.quality === "large" || image.dataset.loadingLarge === "true") return;
-    if (!force && image.closest(".board-canvas-shell")?.classList.contains("is-large")) return;
+    const nextQuality = useDetail && image.dataset.detailSrc ? "detail" : "large";
+    const nextSrc = nextQuality === "detail" ? image.dataset.detailSrc : image.dataset.largeSrc;
+    if (!nextSrc || image.dataset.quality === nextQuality || image.dataset.quality === "detail" || image.dataset.loadingLarge === "true") return;
     image.dataset.loadingLarge = "true";
     const large = new Image();
     large.decoding = "async";
     large.onload = () => {
-      image.src = largeSrc;
-      image.dataset.quality = "large";
+      image.src = nextSrc;
+      image.dataset.quality = nextQuality;
       image.dataset.loadingLarge = "false";
-      image.closest(".board-canvas-shell")?.classList.add("is-large");
+      image.closest(".board-canvas-shell")?.classList.add(`is-${nextQuality}`);
     };
     large.onerror = () => {
       image.dataset.loadingLarge = "false";
     };
-    large.src = largeSrc;
+    large.src = nextSrc;
   });
 }
 
@@ -203,7 +228,7 @@ function renderRenders() {
 function setView(viewName) {
   state.view = viewName;
   $$(".view").forEach((view) => view.classList.toggle("is-active", view.id === `view-${viewName}`));
-  $$(".nav-button").forEach((button) => button.classList.toggle("is-active", button.dataset.view === viewName));
+  $$(".view-switch").forEach((button) => button.classList.toggle("is-active", button.dataset.view === viewName));
   $("#sourcePill").textContent = viewName === "renders" ? `${config.renders.length} renders` : "Presentación";
   if (viewName === "presentacion") requestAnimationFrame(recenterPresentation);
 }
@@ -211,6 +236,7 @@ function setView(viewName) {
 function startPan(event) {
   if (event.button !== 0 || event.target.closest("a, button")) return;
   const viewport = $("#presentationViewport");
+  upgradeBoardImages(true);
   state.isPanning = true;
   state.panStartX = event.clientX;
   state.panStartY = event.clientY;
@@ -331,7 +357,7 @@ function endRenderPointer(event) {
 }
 
 function bindEvents() {
-  $$(".nav-button").forEach((button) => {
+  $$(".view-switch").forEach((button) => {
     button.addEventListener("click", () => setView(button.dataset.view));
   });
 

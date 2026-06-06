@@ -6,8 +6,10 @@ window.PLANCHAS_CONFIG = {
       title: "Plancha 01",
       fileName: "1.pdf",
       pdfRoute: "/pdf/1",
+      pdfOriginalUrl: "https://github.com/ArquiParamo/Planchas/releases/download/original-pdfs/1.pdf",
       previewSrc: "./assets/boards/board-01-preview.webp",
       largeSrc: "./assets/boards/board-01-large.webp",
+      detailSrc: "./assets/boards/board-01-detail.webp",
       sizeBytes: 415824491,
       sha256: "0459E951D6109819075A33393ED05FAF3DBEC3825B9870C1FEED0C367E51B3FF"
     },
@@ -16,8 +18,10 @@ window.PLANCHAS_CONFIG = {
       title: "Plancha 02",
       fileName: "2.pdf",
       pdfRoute: "/pdf/2",
+      pdfOriginalUrl: "https://github.com/ArquiParamo/Planchas/releases/download/original-pdfs/2.pdf",
       previewSrc: "./assets/boards/board-02-preview.webp",
       largeSrc: "./assets/boards/board-02-large.webp",
+      detailSrc: "./assets/boards/board-02-detail.webp",
       sizeBytes: 306117625,
       sha256: "4C96CB64B6AD66EB58459DCD3F73562D4BA05F1BCA7B94BB5584CF09FDDB98D7"
     },
@@ -26,8 +30,10 @@ window.PLANCHAS_CONFIG = {
       title: "Plancha 03",
       fileName: "3.pdf",
       pdfRoute: "/pdf/3",
+      pdfOriginalUrl: "https://github.com/ArquiParamo/Planchas/releases/download/original-pdfs/3.pdf",
       previewSrc: "./assets/boards/board-03-preview.webp",
       largeSrc: "./assets/boards/board-03-large.webp",
+      detailSrc: "./assets/boards/board-03-detail.webp",
       sizeBytes: 242736165,
       sha256: "7A8889BECA5AD60DD4B9B11173123084F47C53F37E9CC9F26DA10407A7B3BAF7"
     },
@@ -36,8 +42,10 @@ window.PLANCHAS_CONFIG = {
       title: "Plancha 04",
       fileName: "4.pdf",
       pdfRoute: "/pdf/4",
+      pdfOriginalUrl: "https://github.com/ArquiParamo/Planchas/releases/download/original-pdfs/4.pdf",
       previewSrc: "./assets/boards/board-04-preview.webp",
       largeSrc: "./assets/boards/board-04-large.webp",
+      detailSrc: "./assets/boards/board-04-detail.webp",
       sizeBytes: 145130720,
       sha256: "57F399CAC69FE8F32E718C4074ACA5BAEB28001155CB1F3DA4768FFB9B92AF8A"
     }
@@ -46,10 +54,10 @@ window.PLANCHAS_CONFIG = {
     canvaStatus: "complete",
     canvaDesignId: "DAHLrjS3wfc",
     canvaTitle: "Presentación principal en Canva",
-    canvaShareUrl: "https://canva.link/r5cbqk33prfx7po",
-    canvaResolvedUrl: "https://www.canva.com/design/DAHLrjS3wfc/p21bDaqrnU1aAsj0MV_kPg/edit",
-    canvaEmbedUrl: "https://www.canva.com/design/DAHLrjS3wfc/view?embed",
-    canvaEmbedAvailable: false
+    canvaShareUrl: "https://www.canva.com/design/DAHLrjS3wfc/9l0mfc75krlFZGRgpcpmKg/view",
+    canvaResolvedUrl: "https://www.canva.com/design/DAHLrjS3wfc/9l0mfc75krlFZGRgpcpmKg/view",
+    canvaEmbedUrl: "https://www.canva.com/design/DAHLrjS3wfc/9l0mfc75krlFZGRgpcpmKg/view?embed",
+    canvaEmbedAvailable: true
   },
   renders: [
     { title: "Render 01", src: "./assets/renders/render-01.png" },
