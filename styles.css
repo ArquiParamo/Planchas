@@ -605,21 +605,6 @@ h3 {
   transform: none;
 }
 
-.render-title {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 2;
-  display: block;
-  border-top: 1px solid var(--line);
-  padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.92);
-  color: var(--green-dark);
-  font-weight: 900;
-  text-align: left;
-}
-
 .render-description {
   position: absolute;
   inset: 0;

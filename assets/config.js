@@ -48,52 +48,52 @@ window.PLANCHAS_CONFIG = {
   },
   renders: [
     {
-      title: "Render 03",
+      title: "Vista inferior del observatorio de colibríes",
       src: "./assets/renders/render-03.png",
       description: "Vista inferior del observatorio de colibríes"
     },
     {
-      title: "Render 04",
+      title: "Fachada posterior del proyecto",
       src: "./assets/renders/render-04.png",
       description: "Fachada posterior del proyecto"
     },
     {
-      title: "Render 05",
+      title: "Fachada izquierda del proyecto",
       src: "./assets/renders/render-05.png",
       description: "Fachada izquierda del proyecto"
     },
     {
-      title: "Render 08",
+      title: "Recorrido exterior de memoria",
       src: "./assets/renders/render-08.png",
       description: "Recorrido exterior de memoria desde el nivel inferior"
     },
     {
-      title: "Render 09",
+      title: "Palimpsesto territorial",
       src: "./assets/renders/render-09.png",
       description: "Vista aérea del palimpsesto territorial"
     },
     {
-      title: "Render 07",
+      title: "Observatorio en la distancia",
       src: "./assets/renders/render-07.png",
       description: "Vista lejana del observatorio de colibríes"
     },
     {
-      title: "Render 02",
+      title: "Recorrido de memoria exterior",
       src: "./assets/renders/render-02.png",
       description: "Recorrido exterior de memoria"
     },
     {
-      title: "Render 10",
+      title: "Observatorio de colibríes",
       src: "./assets/renders/render-10.png",
       description: "Observatorio de colibríes"
     },
     {
-      title: "Render 01",
+      title: "Cable aéreo y cubierta verde",
       src: "./assets/renders/render-01.png",
       description: "Vista aérea del cable aéreo y la cubierta verde"
     },
     {
-      title: "Render 06",
+      title: "Interior del observatorio",
       src: "./assets/renders/render-06.png",
       description: "Interior del observatorio de colibríes"
     }

@@ -310,9 +310,8 @@ function renderRenders() {
   $("#renderGrid").innerHTML = config.renders
     .map(
       (render, index) => `
-        <button class="render-card" type="button" data-render="${index}" aria-label="${render.title}: ${render.description || ""}">
+        <button class="render-card" type="button" data-render="${index}" aria-label="${render.description || render.title}">
           <img src="${render.src}" alt="${render.title}" loading="${index < 3 ? "eager" : "lazy"}" decoding="async" draggable="false" />
-          <span class="render-title">${render.title}</span>
           <span class="render-description">${render.description || render.title}</span>
         </button>
       `
