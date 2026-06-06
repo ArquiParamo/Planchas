@@ -344,6 +344,23 @@ function openRender(index) {
   $("#renderDialog").showModal();
 }
 
+function normalizeWheelDelta(event, target) {
+  const dominantDelta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+  if (event.deltaMode === WheelEvent.DOM_DELTA_LINE) return dominantDelta * 28;
+  if (event.deltaMode === WheelEvent.DOM_DELTA_PAGE) return dominantDelta * target.clientWidth;
+  return dominantDelta;
+}
+
+function handleRenderWheel(event) {
+  if (state.view !== "renders" || event.ctrlKey || $("#renderDialog")?.open) return;
+  const grid = $("#renderGrid");
+  if (!grid || grid.scrollWidth <= grid.clientWidth) return;
+  const delta = normalizeWheelDelta(event, grid);
+  if (!delta) return;
+  event.preventDefault();
+  grid.scrollLeft += delta;
+}
+
 function renderPoint(event) {
   return { x: event.clientX, y: event.clientY };
 }
@@ -425,11 +442,7 @@ function bindEvents() {
     zoomAt(event.deltaY < 0 ? 1.14 : 1 / 1.14, event.clientX, event.clientY);
   }, { passive: false });
 
-  $("#renderGrid").addEventListener("wheel", (event) => {
-    if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
-    event.preventDefault();
-    $("#renderGrid").scrollLeft += event.deltaY;
-  }, { passive: false });
+  $("#view-renders").addEventListener("wheel", handleRenderWheel, { passive: false });
 
   $("#renderGrid").addEventListener("click", (event) => {
     const card = event.target.closest("[data-render]");
