@@ -668,12 +668,6 @@ h3 {
   border-radius: 0;
 }
 
-.render-dialog.is-expanded {
-  width: 100vw;
-  height: 100dvh;
-  border-radius: 0;
-}
-
 .render-dialog::backdrop {
   background: rgba(4, 10, 8, 0.74);
 }
@@ -742,7 +736,9 @@ h3 {
 }
 
 .render-stage {
+  position: relative;
   min-height: 0;
+  width: 100%;
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -760,10 +756,20 @@ h3 {
   cursor: grabbing;
 }
 
+.render-stage:fullscreen,
+.render-stage:-webkit-full-screen {
+  width: 100vw;
+  height: 100dvh;
+  border-radius: 0;
+  background: #000;
+}
+
 .render-stage img {
+  position: absolute;
+  inset: 0;
   display: block;
-  max-width: 100%;
-  max-height: 100%;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   pointer-events: none;
   transform-origin: center center;

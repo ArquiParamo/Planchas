@@ -48,79 +48,79 @@ window.PLANCHAS_CONFIG = {
   },
   renders: [
     {
-      title: "Vista inferior del observatorio de colibríes",
-      src: "./assets/renders/render-11-observatorio-inferior.webp",
-      description: "Vista inferior del observatorio de colibríes"
+      title: "Vista aérea del palimpsesto territorial",
+      src: "./assets/renders/render-final-01.webp",
+      description: "Vista aérea del palimpsesto territorial"
     },
     {
-      title: "Vista inferior desde el observatorio de colibríes",
-      src: "./assets/renders/render-03.png",
-      description: "Vista inferior desde el observatorio de colibríes"
+      title: "Vista aérea del sistema arquitectónico",
+      src: "./assets/renders/render-final-02.webp",
+      description: "Vista aérea del sistema arquitectónico"
     },
     {
-      title: "Fachada posterior del proyecto",
-      src: "./assets/renders/render-04.png",
-      description: "Fachada posterior del proyecto"
-    },
-    {
-      title: "Fachada izquierda del proyecto",
-      src: "./assets/renders/render-05.png",
-      description: "Fachada izquierda del proyecto"
-    },
-    {
-      title: "Vista inferior desde recorrido de memoria exterior",
-      src: "./assets/renders/render-08.png",
-      description: "Vista inferior desde recorrido de memoria exterior"
-    },
-    {
-      title: "Vista aérea del palimpsesto",
-      src: "./assets/renders/render-09.png",
-      description: "Vista aérea del palimpsesto"
-    },
-    {
-      title: "Capas de memoria, pasado extractivo y palimpsesto arquitectónico",
-      src: "./assets/renders/render-13-palimpsesto-arquitectonico.webp",
-      description: "Capas de memoria, pasado extractivo y palimpsesto arquitectónico"
+      title: "Fachada principal entre páramo y niebla",
+      src: "./assets/renders/render-final-03.webp",
+      description: "Fachada principal entre páramo y niebla"
     },
     {
       title: "Invernadero de conocimiento",
-      src: "./assets/renders/render-14-invernadero-conocimiento.webp",
+      src: "./assets/renders/render-final-04.webp",
       description: "Invernadero de conocimiento"
     },
     {
-      title: "Aula de la mina vista a nivel de ojo",
-      src: "./assets/renders/render-12-aula-mina-ojo.webp",
-      description: "Aula de la mina vista a nivel de ojo"
+      title: "Recorrido exterior de memoria",
+      src: "./assets/renders/render-final-05.webp",
+      description: "Recorrido exterior de memoria"
+    },
+    {
+      title: "Vista entre monolitos y niebla",
+      src: "./assets/renders/render-final-06.webp",
+      description: "Vista entre monolitos y niebla"
+    },
+    {
+      title: "Jardín de páramo entre recorridos",
+      src: "./assets/renders/render-final-07.webp",
+      description: "Jardín de páramo entre recorridos"
+    },
+    {
+      title: "Observatorio de colibríes en el paisaje",
+      src: "./assets/renders/render-final-08.webp",
+      description: "Observatorio de colibríes en el paisaje"
+    },
+    {
+      title: "Vista inferior del observatorio de colibríes",
+      src: "./assets/renders/render-final-09.webp",
+      description: "Vista inferior del observatorio de colibríes"
+    },
+    {
+      title: "Mirador hacia el paisaje de páramo",
+      src: "./assets/renders/render-final-10.webp",
+      description: "Mirador hacia el paisaje de páramo"
+    },
+    {
+      title: "Vista desde el interior hacia el territorio",
+      src: "./assets/renders/render-final-11.webp",
+      description: "Vista desde el interior hacia el territorio"
+    },
+    {
+      title: "Invernadero de conocimiento visto desde el exterior",
+      src: "./assets/renders/render-final-12.webp",
+      description: "Invernadero de conocimiento visto desde el exterior"
+    },
+    {
+      title: "Aula de la mina a nivel de ojo",
+      src: "./assets/renders/render-final-13.webp",
+      description: "Aula de la mina a nivel de ojo"
     },
     {
       title: "Aula de la mina vista superior",
-      src: "./assets/renders/render-15-aula-mina-superior.webp",
+      src: "./assets/renders/render-final-14.webp",
       description: "Aula de la mina vista superior"
     },
     {
-      title: "Observatorio en la distancia",
-      src: "./assets/renders/render-07.png",
-      description: "Vista lejana del observatorio de colibríes"
-    },
-    {
-      title: "Vista desde recorrido de memoria exterior",
-      src: "./assets/renders/render-02.png",
-      description: "Vista desde recorrido de memoria exterior"
-    },
-    {
-      title: "Observatorio de colibríes",
-      src: "./assets/renders/render-10.png",
-      description: "Observatorio de colibríes"
-    },
-    {
-      title: "Vista aérea del eje del cable aéreo y la cubierta verde",
-      src: "./assets/renders/render-01.png",
-      description: "Vista aérea del eje del cable aéreo y la cubierta verde"
-    },
-    {
-      title: "Interior del observatorio",
-      src: "./assets/renders/render-06.png",
-      description: "Interior del observatorio de colibríes"
+      title: "Capas de memoria, pasado extractivo y palimpsesto arquitectónico",
+      src: "./assets/renders/render-final-15.webp",
+      description: "Capas de memoria, pasado extractivo y palimpsesto arquitectónico"
     }
   ],
   links: [

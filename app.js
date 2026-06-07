@@ -110,8 +110,16 @@ function setFullscreenButtonState() {
     button.setAttribute("aria-label", button.title);
   }
   if (renderButton) {
-    const dialog = $("#renderDialog");
-    const renderFullscreen = fullscreenElement === dialog || fullscreenElement === $("#renderStage") || dialog?.classList.contains("is-expanded");
+    const renderStage = $("#renderStage");
+    const canFullscreenRender = Boolean(renderStage && (renderStage.requestFullscreen || renderStage.webkitRequestFullscreen));
+    renderButton.disabled = !canFullscreenRender;
+    if (!canFullscreenRender) {
+      renderButton.setAttribute("aria-pressed", "false");
+      renderButton.title = "Pantalla completa no disponible";
+      renderButton.setAttribute("aria-label", renderButton.title);
+      return;
+    }
+    const renderFullscreen = fullscreenElement === renderStage;
     renderButton.setAttribute("aria-pressed", String(renderFullscreen));
     renderButton.title = renderFullscreen ? "Salir de pantalla completa" : "Pantalla completa";
     renderButton.setAttribute("aria-label", renderButton.title);
@@ -471,6 +479,7 @@ function openRender(index) {
   const dialog = $("#renderDialog");
   if (!dialog.open) dialog.showModal();
   updateRenderControls();
+  setFullscreenButtonState();
 }
 
 function updateRenderControls() {
@@ -487,28 +496,20 @@ function navigateRender(offset) {
 
 async function toggleRenderFullscreen() {
   const fullscreenElement = getFullscreenElement();
-  const target = $("#renderDialog");
+  const target = $("#renderStage");
   if (fullscreenElement) {
     const exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen;
     if (exitFullscreen) await exitFullscreen.call(document);
     setFullscreenButtonState();
     return;
   }
-  if (target.classList.contains("is-expanded")) {
-    target.classList.remove("is-expanded");
-    setFullscreenButtonState();
-    return;
-  }
+  if (!target) return;
   const requestFullscreen = target.requestFullscreen || target.webkitRequestFullscreen;
-  if (!requestFullscreen) {
-    target.classList.add("is-expanded");
-    setFullscreenButtonState();
-    return;
-  }
+  if (!requestFullscreen) return;
   try {
     await requestFullscreen.call(target);
   } catch {
-    target.classList.add("is-expanded");
+    return;
   }
   setFullscreenButtonState();
 }
@@ -665,6 +666,11 @@ function handleKeydown(event) {
   if (!$("#renderDialog")?.open) return;
   if (event.key === "Escape" || event.key === "Esc") {
     event.preventDefault();
+    if (getFullscreenElement()) {
+      const exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen;
+      if (exitFullscreen) exitFullscreen.call(document);
+      return;
+    }
     $("#renderDialog").close();
   } else if (event.key === "ArrowLeft") {
     event.preventDefault();
@@ -736,7 +742,6 @@ function bindEvents() {
   $("#renderFullscreen").addEventListener("click", toggleRenderFullscreen);
   $("#renderDialog").addEventListener("close", () => {
     state.render.index = -1;
-    $("#renderDialog").classList.remove("is-expanded");
     resetRenderZoom();
     suppressRenderCardFocus();
     setFullscreenButtonState();
