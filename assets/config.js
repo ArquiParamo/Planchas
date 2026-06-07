@@ -48,6 +48,11 @@ window.PLANCHAS_CONFIG = {
   },
   renders: [
     {
+      title: "Capas de memoria, pasado extractivo y palimpsesto arquitectónico",
+      src: "./assets/renders/render-final-15.webp",
+      description: "Capas de memoria, pasado extractivo y palimpsesto arquitectónico"
+    },
+    {
       title: "Vista aérea del palimpsesto territorial",
       src: "./assets/renders/render-final-01.webp",
       description: "Vista aérea del palimpsesto territorial"
@@ -116,11 +121,6 @@ window.PLANCHAS_CONFIG = {
       title: "Aula de la mina vista superior",
       src: "./assets/renders/render-final-14.webp",
       description: "Aula de la mina vista superior"
-    },
-    {
-      title: "Capas de memoria, pasado extractivo y palimpsesto arquitectónico",
-      src: "./assets/renders/render-final-15.webp",
-      description: "Capas de memoria, pasado extractivo y palimpsesto arquitectónico"
     }
   ],
   links: [
