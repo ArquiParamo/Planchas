@@ -48,6 +48,11 @@ window.PLANCHAS_CONFIG = {
   },
   renders: [
     {
+      title: "Vista inverior del observatorio de colibríes",
+      src: "./assets/renders/render-11-observatorio-inferior.webp",
+      description: "Vista inverior del observatorio de colibríes"
+    },
+    {
       title: "Vista inferior desde el observatorio de colibríes",
       src: "./assets/renders/render-03.png",
       description: "Vista inferior desde el observatorio de colibríes"
@@ -71,6 +76,26 @@ window.PLANCHAS_CONFIG = {
       title: "Vista aérea del palimpsesto",
       src: "./assets/renders/render-09.png",
       description: "Vista aérea del palimpsesto"
+    },
+    {
+      title: "Capas de memoria, pasado extractivo y palimpsesto arquitectónico",
+      src: "./assets/renders/render-13-palimpsesto-arquitectonico.webp",
+      description: "Capas de memoria, pasado extractivo y palimpsesto arquitectónico"
+    },
+    {
+      title: "Invernadero de conocimiento",
+      src: "./assets/renders/render-14-invernadero-conocimiento.webp",
+      description: "Invernadero de conocimiento"
+    },
+    {
+      title: "Aula de la mina vista a nivel de ojo",
+      src: "./assets/renders/render-12-aula-mina-ojo.webp",
+      description: "Aula de la mina vista a nivel de ojo"
+    },
+    {
+      title: "Aula de la mina vista superior",
+      src: "./assets/renders/render-15-aula-mina-superior.webp",
+      description: "Aula de la mina vista superior"
     },
     {
       title: "Observatorio en la distancia",
