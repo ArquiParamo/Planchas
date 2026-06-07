@@ -16,6 +16,9 @@ const state = {
   startY: 0,
   panMoved: false,
   panStartedOnCanva: false,
+  panPointers: new Map(),
+  pinchDistance: 0,
+  pinchScale: 1,
   canvaInteractionTimer: null,
   gallery: {
     isPanning: false,
@@ -26,7 +29,11 @@ const state = {
     pointerId: null,
     startX: 0,
     startY: 0,
-    scrollLeft: 0
+    scrollLeft: 0,
+    lastX: 0,
+    lastTime: 0,
+    velocityX: 0,
+    inertiaFrame: null
   },
   render: {
     index: -1,
@@ -40,7 +47,12 @@ const state = {
     panStartY: 0,
     pointers: new Map(),
     pinchDistance: 0,
-    pinchScale: 1
+    pinchScale: 1,
+    swipeStartX: 0,
+    swipeStartY: 0,
+    swipeLastX: 0,
+    swipeLastY: 0,
+    swipeLocked: false
   }
 };
 
@@ -53,6 +65,28 @@ function applyPan() {
   const content = $("#presentationContent");
   if (!content) return;
   content.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`;
+}
+
+function setPresentationScaleAt(nextScale, originX, originY) {
+  const viewport = $("#presentationViewport");
+  if (!viewport) return;
+  const rect = viewport.getBoundingClientRect();
+  const beforeScale = state.scale;
+  const clampedScale = clamp(nextScale, 0.14, 6.5);
+  if (clampedScale === beforeScale) return;
+  const x = originX - rect.left;
+  const y = originY - rect.top;
+  const contentX = (x - state.x) / beforeScale;
+  const contentY = (y - state.y) / beforeScale;
+  state.scale = clampedScale;
+  state.x = x - contentX * clampedScale;
+  state.y = y - contentY * clampedScale;
+  applyPan();
+  if (state.scale > DETAIL_IMAGE_SCALE) {
+    upgradeBoardImages(true);
+  } else if (state.scale > LARGE_IMAGE_SCALE) {
+    upgradeBoardImages(false);
+  }
 }
 
 function contentBounds() {
@@ -91,6 +125,9 @@ function recenterPresentation() {
   state.scale = clamp(Math.min(scaleX, scaleY), 0.14, 1);
   state.x = Math.round(bounds.insets.left + (availableWidth - bounds.contentWidth * state.scale) / 2);
   state.y = Math.round(bounds.insets.top + (availableHeight - bounds.contentHeight * state.scale) / 2);
+  state.panPointers.clear();
+  state.pinchDistance = 0;
+  state.pinchScale = state.scale;
   applyPan();
 }
 
@@ -98,15 +135,23 @@ function getFullscreenElement() {
   return document.fullscreenElement || document.webkitFullscreenElement || null;
 }
 
+async function exitNativeFullscreen() {
+  const exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen;
+  if (getFullscreenElement() && exitFullscreen) {
+    await exitFullscreen.call(document);
+  }
+  setFullscreenButtonState();
+}
+
 function setFullscreenButtonState() {
   const button = $("#fitBoard");
   const renderButton = $("#renderFullscreen");
-  const canvaFrame = $(".canva-frame-shell iframe");
+  const canvaShell = $("#canvaFrameShell");
   const fullscreenElement = getFullscreenElement();
-  const isFullscreen = fullscreenElement === canvaFrame || fullscreenElement === $("#canvaFrameShell");
+  const isFullscreen = fullscreenElement === canvaShell || fullscreenElement === $(".canva-frame-shell iframe");
   if (button && !button.disabled) {
     button.setAttribute("aria-pressed", String(isFullscreen));
-    button.title = isFullscreen ? "Salir de Canva pantalla completa" : "Canva pantalla completa";
+    button.title = isFullscreen ? "Salir de presentación en pantalla completa" : "Presentación en pantalla completa";
     button.setAttribute("aria-label", button.title);
   }
   if (renderButton) {
@@ -124,6 +169,10 @@ function setFullscreenButtonState() {
     renderButton.title = renderFullscreen ? "Salir de pantalla completa" : "Pantalla completa";
     renderButton.setAttribute("aria-label", renderButton.title);
   }
+  const renderExit = $("#renderExitFullscreen");
+  if (renderExit) renderExit.hidden = fullscreenElement !== $("#renderStage");
+  const canvaExit = $("#canvaExitFullscreen");
+  if (canvaExit) canvaExit.hidden = fullscreenElement !== canvaShell;
 }
 
 function disableCanvaInteraction() {
@@ -153,13 +202,12 @@ function disableCanvaInteractionOutside(event) {
 async function toggleCanvaFullscreen() {
   const fullscreenElement = getFullscreenElement();
   if (fullscreenElement) {
-    const exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen;
-    if (exitFullscreen) await exitFullscreen.call(document);
+    await exitNativeFullscreen();
     return;
   }
 
   if (state.view !== "presentacion") setView("presentacion");
-  const target = $(".canva-frame-shell iframe") || $("#canvaFrameShell");
+  const target = $("#canvaFrameShell");
   const requestFullscreen = target.requestFullscreen || target.webkitRequestFullscreen;
   if (!requestFullscreen) {
     return;
@@ -173,25 +221,7 @@ async function toggleCanvaFullscreen() {
 }
 
 function zoomAt(delta, originX, originY) {
-  const viewport = $("#presentationViewport");
-  if (!viewport) return;
-  const rect = viewport.getBoundingClientRect();
-  const beforeScale = state.scale;
-  const nextScale = clamp(state.scale * delta, 0.14, 6.5);
-  if (nextScale === beforeScale) return;
-  const x = originX - rect.left;
-  const y = originY - rect.top;
-  const contentX = (x - state.x) / beforeScale;
-  const contentY = (y - state.y) / beforeScale;
-  state.scale = nextScale;
-  state.x = x - contentX * nextScale;
-  state.y = y - contentY * nextScale;
-  applyPan();
-  if (state.scale > DETAIL_IMAGE_SCALE) {
-    upgradeBoardImages(true);
-  } else if (state.scale > LARGE_IMAGE_SCALE) {
-    upgradeBoardImages(false);
-  }
+  setPresentationScaleAt(state.scale * delta, originX, originY);
 }
 
 function renderBoardPanels() {
@@ -276,7 +306,8 @@ function scheduleLargeBoardUpgrade() {
 function renderCanva() {
   const presentation = config.presentation;
   $("#canvaExternal").href = presentation.canvaShareUrl;
-  $("#canvaExternal").textContent = "Abrir Canva";
+  $("#canvaExternal").textContent = "Abrir presentación";
+  $("#canvaExternal").setAttribute("aria-label", "Abrir presentación");
   const shell = $("#canvaFrameShell");
   const loader = $("#canvaLoader");
   shell.innerHTML = "";
@@ -293,22 +324,33 @@ function renderCanva() {
     dragLayer.className = "canva-drag-layer";
     dragLayer.setAttribute("aria-hidden", "true");
     shell.append(dragLayer);
+    const exitButton = document.createElement("button");
+    exitButton.className = "fullscreen-exit canva-fullscreen-exit";
+    exitButton.id = "canvaExitFullscreen";
+    exitButton.type = "button";
+    exitButton.title = "Salir de pantalla completa";
+    exitButton.setAttribute("aria-label", "Salir de pantalla completa");
+    exitButton.hidden = true;
+    exitButton.innerHTML = '<i data-lucide="minimize-2" aria-hidden="true"></i>';
+    exitButton.addEventListener("click", exitNativeFullscreen);
+    shell.append(exitButton);
+    if (window.lucide) window.lucide.createIcons();
     shell.addEventListener("mouseleave", disableCanvaInteraction);
     return;
   }
   const notice = document.createElement("div");
   notice.className = "canva-notice";
   notice.innerHTML = `
-    <p class="eyebrow">Canva no embebido</p>
+    <p class="eyebrow">Presentación no embebida</p>
     <h3>${presentation.canvaTitle}</h3>
-    <p>El enlace actual no entrega un visor público embebible. Cuando Canva genere un iframe público, este espacio lo mostrará directamente.</p>
+    <p>El enlace actual no entrega un visor público embebible. Cuando exista un iframe público, este espacio lo mostrará directamente.</p>
   `;
   const link = document.createElement("a");
   link.className = "primary-link";
   link.href = presentation.canvaShareUrl;
   link.target = "_blank";
   link.rel = "noreferrer";
-  link.textContent = "Abrir Canva";
+  link.textContent = "Abrir presentación";
   notice.append(link);
   shell.append(notice);
   if (loader) loader.remove();
@@ -339,8 +381,8 @@ function setView(viewName) {
 function updateViewToolState() {
   const disabled = state.view === "renders";
   const titles = {
-    resetView: "Recentrar presentaciÃ³n",
-    fitBoard: "Canva pantalla completa",
+    resetView: "Recentrar presentación",
+    fitBoard: "Presentación en pantalla completa",
     zoomOut: "Alejar",
     zoomIn: "Acercar"
   };
@@ -362,14 +404,18 @@ function updateViewToolState() {
 }
 
 function startPan(event) {
-  if (state.isPanning) return;
-  if (event.button !== 0 || event.target.closest("a, button")) return;
+  if (event.type === "mousedown" && state.panPointers.size) return;
+  if (event.pointerType === "mouse" && event.button !== 0) return;
+  if (event.target.closest("a, button")) return;
   const viewport = $("#presentationViewport");
+  const key = inputId(event);
+  if (state.panPointers.has(key)) return;
   if (state.scale > DETAIL_IMAGE_SCALE) {
     upgradeBoardImages(true);
   } else if (state.scale > LARGE_IMAGE_SCALE) {
     upgradeBoardImages(false);
   }
+  state.panPointers.set(key, renderPoint(event));
   state.isPanning = true;
   state.panStartX = event.clientX;
   state.panStartY = event.clientY;
@@ -381,10 +427,29 @@ function startPan(event) {
   if (state.panStartedOnCanva) disableCanvaInteraction();
   viewport.classList.add("is-panning");
   if (event.pointerId != null) viewport.setPointerCapture(event.pointerId);
+  if (state.panPointers.size === 2) {
+    const [first, second] = [...state.panPointers.values()];
+    state.pinchDistance = pointDistance(first, second);
+    state.pinchScale = state.scale;
+  }
 }
 
 function movePan(event) {
-  if (!state.isPanning) return;
+  const key = inputId(event);
+  if (!state.isPanning || !state.panPointers.has(key)) return;
+  state.panPointers.set(key, renderPoint(event));
+  if (state.panPointers.size >= 2) {
+    const [first, second] = [...state.panPointers.values()];
+    const distance = pointDistance(first, second);
+    const centerX = (first.x + second.x) / 2;
+    const centerY = (first.y + second.y) / 2;
+    if (state.pinchDistance) {
+      setPresentationScaleAt(state.pinchScale * (distance / state.pinchDistance), centerX, centerY);
+    }
+    state.panMoved = true;
+    event.preventDefault();
+    return;
+  }
   const deltaX = event.clientX - state.panStartX;
   const deltaY = event.clientY - state.panStartY;
   if (!state.panMoved && Math.hypot(deltaX, deltaY) > DRAG_THRESHOLD) state.panMoved = true;
@@ -398,12 +463,28 @@ function endPan(event) {
   if (!state.isPanning) return;
   const viewport = $("#presentationViewport");
   const wasCanvaClick = state.panStartedOnCanva && !state.panMoved;
-  state.isPanning = false;
-  viewport.classList.remove("is-panning");
+  const key = inputId(event);
+  state.panPointers.delete(key);
   if (event.pointerId != null && viewport.hasPointerCapture(event.pointerId)) viewport.releasePointerCapture(event.pointerId);
-  if (wasCanvaClick) enableCanvaInteraction();
-  state.panStartedOnCanva = false;
-  state.panMoved = false;
+  if (state.panPointers.size === 1) {
+    const [point] = [...state.panPointers.values()];
+    state.panStartX = point.x;
+    state.panStartY = point.y;
+    state.startX = state.x;
+    state.startY = state.y;
+    state.pinchDistance = 0;
+    state.pinchScale = state.scale;
+    return;
+  }
+  if (!state.panPointers.size) {
+    state.isPanning = false;
+    viewport.classList.remove("is-panning");
+    if (wasCanvaClick) enableCanvaInteraction();
+    state.panStartedOnCanva = false;
+    state.panMoved = false;
+    state.pinchDistance = 0;
+    state.pinchScale = state.scale;
+  }
 }
 
 function resetRenderZoom() {
@@ -413,6 +494,9 @@ function resetRenderZoom() {
   state.render.y = 0;
   state.render.isPanning = false;
   state.render.pointers.clear();
+  state.render.pinchDistance = 0;
+  state.render.pinchScale = 1;
+  state.render.swipeLocked = false;
   stage?.classList.remove("is-panning");
   applyRenderZoom();
 }
@@ -448,6 +532,10 @@ function renderZoomAt(delta, event) {
   const rect = stage.getBoundingClientRect();
   const beforeScale = state.render.scale;
   const nextScale = clamp(state.render.scale * delta, 1, 5.5);
+  if (nextScale <= 1.001) {
+    resetRenderZoom();
+    return;
+  }
   if (nextScale === beforeScale) return;
   const originX = event ? event.clientX : rect.left + rect.width / 2;
   const originY = event ? event.clientY : rect.top + rect.height / 2;
@@ -456,13 +544,8 @@ function renderZoomAt(delta, event) {
   const contentX = (localX - state.render.x) / beforeScale;
   const contentY = (localY - state.render.y) / beforeScale;
   state.render.scale = nextScale;
-  if (nextScale === 1) {
-    state.render.x = 0;
-    state.render.y = 0;
-  } else {
-    state.render.x = localX - contentX * nextScale;
-    state.render.y = localY - contentY * nextScale;
-  }
+  state.render.x = localX - contentX * nextScale;
+  state.render.y = localY - contentY * nextScale;
   applyRenderZoom();
 }
 
@@ -474,7 +557,9 @@ function openRender(index) {
   $("#renderPreview").src = render.src;
   $("#renderPreview").alt = render.title;
   $("#renderTitle").textContent = render.title;
-  $("#renderCaption").textContent = render.description || "";
+  const caption = render.description && render.description.trim() !== render.title.trim() ? render.description : "";
+  $("#renderCaption").textContent = caption;
+  $("#renderCaption").hidden = !caption;
   resetRenderZoom();
   const dialog = $("#renderDialog");
   if (!dialog.open) dialog.showModal();
@@ -498,9 +583,7 @@ async function toggleRenderFullscreen() {
   const fullscreenElement = getFullscreenElement();
   const target = $("#renderStage");
   if (fullscreenElement) {
-    const exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen;
-    if (exitFullscreen) await exitFullscreen.call(document);
-    setFullscreenButtonState();
+    await exitNativeFullscreen();
     return;
   }
   if (!target) return;
@@ -519,6 +602,34 @@ function normalizeWheelDelta(event, target) {
   if (event.deltaMode === WheelEvent.DOM_DELTA_LINE) return dominantDelta * 28;
   if (event.deltaMode === WheelEvent.DOM_DELTA_PAGE) return dominantDelta * target.clientWidth;
   return dominantDelta;
+}
+
+function stopGalleryInertia() {
+  if (state.gallery.inertiaFrame) {
+    window.cancelAnimationFrame(state.gallery.inertiaFrame);
+    state.gallery.inertiaFrame = null;
+  }
+}
+
+function startGalleryInertia(grid) {
+  stopGalleryInertia();
+  let velocity = state.gallery.velocityX;
+  if (!grid || Math.abs(velocity) < 0.08) return;
+  let previousTime = performance.now();
+  const step = (time) => {
+    const deltaTime = Math.min(32, time - previousTime);
+    previousTime = time;
+    grid.scrollLeft -= velocity * deltaTime;
+    velocity *= 0.92;
+    const atStart = grid.scrollLeft <= 0;
+    const atEnd = grid.scrollLeft >= grid.scrollWidth - grid.clientWidth - 1;
+    if (Math.abs(velocity) < 0.02 || atStart || atEnd) {
+      state.gallery.inertiaFrame = null;
+      return;
+    }
+    state.gallery.inertiaFrame = window.requestAnimationFrame(step);
+  };
+  state.gallery.inertiaFrame = window.requestAnimationFrame(step);
 }
 
 function handleRenderWheel(event) {
@@ -556,12 +667,18 @@ function startRenderPointer(event) {
     state.render.panStartY = event.clientY;
     state.render.startX = state.render.x;
     state.render.startY = state.render.y;
+    state.render.swipeStartX = event.clientX;
+    state.render.swipeStartY = event.clientY;
+    state.render.swipeLastX = event.clientX;
+    state.render.swipeLastY = event.clientY;
+    state.render.swipeLocked = false;
     if (state.render.scale > 1.01) stage.classList.add("is-panning");
   }
   if (state.render.pointers.size === 2) {
     const [first, second] = [...state.render.pointers.values()];
     state.render.pinchDistance = pointDistance(first, second);
     state.render.pinchScale = state.render.scale;
+    state.render.swipeLocked = true;
   }
 }
 
@@ -573,26 +690,43 @@ function moveRenderPointer(event) {
     const [first, second] = [...state.render.pointers.values()];
     const distance = pointDistance(first, second);
     if (state.render.pinchDistance) {
-      state.render.scale = clamp(state.render.pinchScale * (distance / state.render.pinchDistance), 1, 5.5);
-      applyRenderZoom();
+      const nextScale = clamp(state.render.pinchScale * (distance / state.render.pinchDistance), 1, 5.5);
+      if (nextScale <= 1.001) {
+        resetRenderZoom();
+      } else {
+        state.render.scale = nextScale;
+        applyRenderZoom();
+      }
     }
+    event.preventDefault();
     return;
   }
+  state.render.swipeLastX = event.clientX;
+  state.render.swipeLastY = event.clientY;
   if (state.render.isPanning && state.render.scale > 1.01) {
     state.render.x = state.render.startX + event.clientX - state.render.panStartX;
     state.render.y = state.render.startY + event.clientY - state.render.panStartY;
     event.preventDefault();
     applyRenderZoom();
+  } else if (event.pointerType === "touch") {
+    event.preventDefault();
   }
 }
 
 function endRenderPointer(event) {
   const stage = $("#renderStage");
   const key = inputId(event);
+  const wasSingleTouch = event.pointerType === "touch" && state.render.pointers.size === 1 && !state.render.swipeLocked;
+  const swipeX = event.clientX - state.render.swipeStartX;
+  const swipeY = event.clientY - state.render.swipeStartY;
   state.render.pointers.delete(key);
   if (event.pointerId != null && stage.hasPointerCapture(event.pointerId)) stage.releasePointerCapture(event.pointerId);
   state.render.isPanning = false;
   if (!state.render.pointers.size) stage.classList.remove("is-panning");
+  if (wasSingleTouch && state.render.scale <= 1.01 && Math.abs(swipeX) > 54 && Math.abs(swipeX) > Math.abs(swipeY) * 1.25) {
+    navigateRender(swipeX < 0 ? 1 : -1);
+    return;
+  }
   if (state.render.pointers.size === 1) {
     const [[remainingId, point]] = state.render.pointers.entries();
     state.render.isPanning = true;
@@ -601,16 +735,28 @@ function endRenderPointer(event) {
     state.render.startX = state.render.x;
     state.render.startY = state.render.y;
     state.render.pointerId = remainingId;
+    state.render.swipeStartX = point.x;
+    state.render.swipeStartY = point.y;
+    state.render.swipeLastX = point.x;
+    state.render.swipeLastY = point.y;
+    state.render.swipeLocked = false;
     if (state.render.scale > 1.01) stage.classList.add("is-panning");
+  }
+  if (!state.render.pointers.size) {
+    state.render.swipeLocked = false;
+    state.render.pinchDistance = 0;
+    state.render.pinchScale = state.render.scale;
   }
 }
 
 function startRenderGalleryPan(event) {
+  if (event.type === "mousedown" && state.gallery.isPanning) return;
   if (state.gallery.isPanning) return;
   if (state.view !== "renders" || $("#renderDialog")?.open || event.button !== 0) return;
   const grid = $("#renderGrid");
   if (!grid || grid.scrollWidth <= grid.clientWidth) return;
   const card = event.target.closest("[data-render]");
+  stopGalleryInertia();
   state.gallery.isPanning = true;
   state.gallery.moved = false;
   state.gallery.suppressClick = false;
@@ -620,6 +766,9 @@ function startRenderGalleryPan(event) {
   state.gallery.startX = event.clientX;
   state.gallery.startY = event.clientY;
   state.gallery.scrollLeft = grid.scrollLeft;
+  state.gallery.lastX = event.clientX;
+  state.gallery.lastTime = performance.now();
+  state.gallery.velocityX = 0;
   grid.classList.add("is-grabbing");
   if (event.pointerId != null) grid.setPointerCapture(event.pointerId);
 }
@@ -633,6 +782,11 @@ function moveRenderGalleryPan(event) {
   if (!state.gallery.moved && Math.hypot(deltaX, deltaY) > DRAG_THRESHOLD) state.gallery.moved = true;
   if (!state.gallery.moved) return;
   event.preventDefault();
+  const now = performance.now();
+  const deltaTime = Math.max(1, now - state.gallery.lastTime);
+  state.gallery.velocityX = (event.clientX - state.gallery.lastX) / deltaTime;
+  state.gallery.lastX = event.clientX;
+  state.gallery.lastTime = now;
   grid.scrollLeft = state.gallery.scrollLeft - deltaX;
 }
 
@@ -646,7 +800,9 @@ function endRenderGalleryPan(event) {
   state.gallery.isPanning = false;
   state.gallery.pointerId = null;
   state.gallery.suppressClick = state.gallery.moved;
+  const moved = state.gallery.moved;
   state.gallery.moved = false;
+  if (moved) startGalleryInertia(grid);
   if (shouldOpen) {
     window.setTimeout(() => {
       if (!state.gallery.clickOpened && !$("#renderDialog")?.open) openRender(pendingOpenIndex);
@@ -667,8 +823,7 @@ function handleKeydown(event) {
   if (event.key === "Escape" || event.key === "Esc") {
     event.preventDefault();
     if (getFullscreenElement()) {
-      const exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen;
-      if (exitFullscreen) exitFullscreen.call(document);
+      exitNativeFullscreen();
       return;
     }
     $("#renderDialog").close();
@@ -740,6 +895,7 @@ function bindEvents() {
   $("#prevRender").addEventListener("click", () => navigateRender(-1));
   $("#nextRender").addEventListener("click", () => navigateRender(1));
   $("#renderFullscreen").addEventListener("click", toggleRenderFullscreen);
+  $("#renderExitFullscreen").addEventListener("click", exitNativeFullscreen);
   $("#renderDialog").addEventListener("close", () => {
     state.render.index = -1;
     resetRenderZoom();

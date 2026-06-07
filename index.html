@@ -5,17 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Visor navegable de planchas, presentación de Canva y renders del proyecto Arquitectura de Páramo."
+      content="Visor navegable de planchas, presentación del proyecto y renders de Arquitectura de Páramo."
     />
     <title>Planchas | Arquitectura de Páramo</title>
     <link rel="preload" as="image" href="./assets/boards/board-01-large.webp" />
     <link rel="preload" as="image" href="./assets/boards/board-02-large.webp" />
     <link rel="preload" as="image" href="./assets/boards/board-03-large.webp" />
     <link rel="preload" as="image" href="./assets/boards/board-04-large.webp" />
-    <link rel="stylesheet" href="./styles.css?v=20260607-010500" />
-    <script src="./assets/config.js?v=20260607-010500"></script>
+    <link rel="stylesheet" href="./styles.css?v=20260607-020000" />
+    <script src="./assets/config.js?v=20260607-020000"></script>
     <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
-    <script src="./app.js?v=20260607-010500" defer></script>
+    <script src="./app.js?v=20260607-020000" defer></script>
   </head>
   <body>
     <div class="app-shell">
@@ -24,7 +24,10 @@
           <div class="panel-title-row">
             <div class="panel-title-copy">
               <p class="eyebrow">Entrega final</p>
-              <h1>Planchas y renders</h1>
+              <div class="title-line">
+                <h1>Planchas y renders</h1>
+                <span class="author-credit">Elaborado por Alejandro Ávila H.</span>
+              </div>
               <p class="intro-text">Arquitectura de Páramo</p>
             </div>
             <div class="toolbar action-toolbar" aria-label="Controles rápidos">
@@ -43,7 +46,7 @@
                 </a>
               </div>
               <div class="internal-actions" aria-label="Herramientas de vista">
-                <button class="internal-tool" id="fitBoard" type="button" title="Canva pantalla completa" aria-label="Canva pantalla completa" aria-pressed="false">
+                <button class="internal-tool" id="fitBoard" type="button" title="Presentación en pantalla completa" aria-label="Presentación en pantalla completa" aria-pressed="false">
                   <i data-lucide="maximize-2" aria-hidden="true"></i>
                 </button>
                 <button class="internal-tool" id="zoomOut" type="button" title="Alejar" aria-label="Alejar">
@@ -73,20 +76,19 @@
 
       <main class="workspace">
         <section class="view is-active presentation-view" id="view-presentacion" aria-labelledby="presentationHeading">
-          <h2 class="sr-only" id="presentationHeading">Planchas y Canva</h2>
+          <h2 class="sr-only" id="presentationHeading">Planchas y presentación</h2>
           <div class="pan-viewport" id="presentationViewport" aria-label="Espacio navegable de presentación">
             <div class="pan-content" id="presentationContent">
               <section class="boards-strip" id="boardsStrip" aria-label="Cuatro planchas"></section>
               <section class="canva-stage" id="canvaStage" aria-labelledby="canvaHeading">
                 <div class="canva-heading">
                   <div>
-                    <p class="toolbar-kicker">Canva</p>
                     <h2 id="canvaHeading">Presentación del proyecto</h2>
                   </div>
-                  <a class="tool-button" id="canvaExternal" target="_blank" rel="noreferrer">Abrir Canva</a>
+                  <a class="tool-button" id="canvaExternal" target="_blank" rel="noreferrer" aria-label="Abrir presentación">Abrir presentación</a>
                 </div>
                 <div class="canva-frame-shell" id="canvaFrameShell">
-                  <p class="pdf-loader" id="canvaLoader">Verificando visor público de Canva</p>
+                  <p class="pdf-loader" id="canvaLoader">Verificando presentación embebida</p>
                 </div>
               </section>
             </div>
@@ -123,6 +125,9 @@
       </div>
       <div class="render-stage" id="renderStage">
         <img id="renderPreview" alt="" draggable="false" />
+        <button class="fullscreen-exit render-fullscreen-exit" id="renderExitFullscreen" type="button" title="Salir de pantalla completa" aria-label="Salir de pantalla completa" hidden>
+          <i data-lucide="minimize-2" aria-hidden="true"></i>
+        </button>
       </div>
     </dialog>
   </body>

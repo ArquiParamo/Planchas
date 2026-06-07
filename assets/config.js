@@ -40,7 +40,7 @@ window.PLANCHAS_CONFIG = {
   presentation: {
     canvaStatus: "complete",
     canvaDesignId: "DAHLrjS3wfc",
-    canvaTitle: "Presentación principal en Canva",
+    canvaTitle: "Presentación del proyecto",
     canvaShareUrl: "https://www.canva.com/design/DAHLrjS3wfc/9l0mfc75krlFZGRgpcpmKg/view",
     canvaResolvedUrl: "https://www.canva.com/design/DAHLrjS3wfc/9l0mfc75krlFZGRgpcpmKg/view",
     canvaEmbedUrl: "https://www.canva.com/design/DAHLrjS3wfc/9l0mfc75krlFZGRgpcpmKg/view?embed",
@@ -53,24 +53,24 @@ window.PLANCHAS_CONFIG = {
       description: "Capas de memoria, pasado extractivo y palimpsesto arquitectónico"
     },
     {
-      title: "Vista aérea del palimpsesto territorial",
+      title: "Vista aérea del palimpsesto",
       src: "./assets/renders/render-final-01.webp",
-      description: "Vista aérea del palimpsesto territorial"
+      description: "Vista aérea del palimpsesto"
     },
     {
-      title: "Vista aérea del sistema arquitectónico",
+      title: "Vista aérea tras el palimpsesto",
       src: "./assets/renders/render-final-02.webp",
-      description: "Vista aérea del sistema arquitectónico"
+      description: "Vista aérea tras el palimpsesto"
     },
     {
-      title: "Fachada principal entre páramo y niebla",
+      title: "Fachada posterior",
       src: "./assets/renders/render-final-03.webp",
-      description: "Fachada principal entre páramo y niebla"
+      description: "Fachada posterior"
     },
     {
-      title: "Invernadero de conocimiento",
+      title: "Fachada izquierda",
       src: "./assets/renders/render-final-04.webp",
-      description: "Invernadero de conocimiento"
+      description: "Fachada izquierda"
     },
     {
       title: "Recorrido exterior de memoria",
@@ -83,9 +83,9 @@ window.PLANCHAS_CONFIG = {
       description: "Vista entre monolitos y niebla"
     },
     {
-      title: "Jardín de páramo entre recorridos",
+      title: "Recorrido hacia observatorio de colibríes",
       src: "./assets/renders/render-final-07.webp",
-      description: "Jardín de páramo entre recorridos"
+      description: "Recorrido hacia observatorio de colibríes"
     },
     {
       title: "Observatorio de colibríes en el paisaje",
@@ -103,9 +103,9 @@ window.PLANCHAS_CONFIG = {
       description: "Mirador hacia el paisaje de páramo"
     },
     {
-      title: "Vista desde el interior hacia el territorio",
+      title: "Vista desde el observatorio de colibríes",
       src: "./assets/renders/render-final-11.webp",
-      description: "Vista desde el interior hacia el territorio"
+      description: "Vista desde el observatorio de colibríes"
     },
     {
       title: "Invernadero de conocimiento visto desde el exterior",
