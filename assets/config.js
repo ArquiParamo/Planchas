@@ -48,9 +48,9 @@ window.PLANCHAS_CONFIG = {
   },
   renders: [
     {
-      title: "Vista inverior del observatorio de colibríes",
+      title: "Vista inferior del observatorio de colibríes",
       src: "./assets/renders/render-11-observatorio-inferior.webp",
-      description: "Vista inverior del observatorio de colibríes"
+      description: "Vista inferior del observatorio de colibríes"
     },
     {
       title: "Vista inferior desde el observatorio de colibríes",
