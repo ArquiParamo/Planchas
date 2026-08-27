@@ -127,7 +127,7 @@ window.PLANCHAS_CONFIG = {
     {
       title: "Mapa biodiverso",
       label: "Abrir mapa",
-      url: "https://mapa-biodiverso-chingaza.arqiparamo.workers.dev/",
+      url: "https://chingazabiodiv.pages.dev/",
       note: "Sitio público verificado por HTTP 200."
     },
     {
